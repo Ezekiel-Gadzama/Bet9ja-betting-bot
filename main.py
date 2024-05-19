@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 import numpy as np
 import pytz
 import math
@@ -105,8 +106,13 @@ if BotPassword != userPassword:
     raise SystemExit("Incorrect password. Terminating the program.")
 start_email_thread(False) # to be able to send profit email
 # Initialize the webdriver instances outside of Bet9jaBot class
-driver = webdriver.Chrome()
-live_score_driver = webdriver.Chrome()
+
+
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+driver = webdriver.Chrome(options=chrome_options)
+live_score_driver = webdriver.Chrome(options=chrome_options)
 # Define a lock and condition variable
 pick_a_match_lock = threading.Lock()
 
