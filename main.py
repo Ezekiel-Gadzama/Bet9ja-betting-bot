@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 10  # advice to use a minimum of 5
 potential_monthly_Profit = 7
-amount_to_use = 1187000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 1200000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -85,11 +85,11 @@ print("This is a print statement")
 ###########################################################
 recipients = ["ezekielgadzama17@gmail.com", "Adesijioyindamola71@gmail.com"
     , "adebolu.adewoyin@gmail.com", "blackboj@proton.me", "jimohnurudeen1256@gmail.com",
-              "Kingsleyeke101@gmail.com","Chrixs.barney@gmail.com"]  # Add more emails as needed
+              "Kingsleyeke101@gmail.com","Chrixs.barney@gmail.com","oluabikoye@outlook.com"]  # Add more emails as needed
 fullnames = ["Ezekiel John Gadzama", "Adesiji oyindamola boluwatife",
              "Adewoyin Daniel Adebolu", "Afeez Olanrewaju", "Jimoh Nurudeen Oluwaseun",
-             "Kingsley Nkemdi Ekechukwu","Christian Bassey"]  # Corresponding full names
-original_amounts = [209000, 100000, 38500, 200000, 200000,50000,400000]  # Corresponding original amounts # other: 988500
+             "Kingsley Nkemdi Ekechukwu","Christian Bassey","Olu Abikoye"]  # Corresponding full names
+original_amounts = [158300, 100000, 38500, 200000, 200000,50000,400000,53200]  # Corresponding original amounts # other: 1041700
 binomialBetBotEmail = "ezekielgadzama23@gmail.com"
 
 #######################################################
