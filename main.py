@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 10  # advice to use a minimum of 5
 potential_monthly_Profit = 7
-amount_to_use = 400000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 1187000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -82,18 +82,15 @@ logger.info("Logger initialized")
 # Example print statement
 print("This is a print statement")
 
-recipients = ["ezekielgadzama17@gmail.com", "Adesijioyindamola71@gmail.com"
-    , "adebolu.adewoyin@gmail.com", "blackboj@proton.me", "jimohnurudeen1256@gmail.com"]  # Add more emails as needed
-fullnames = ["Ezekiel John Gadzama", "Adesiji oyindamola boluwatife",
-             "Adewoyin Daniel Adebolu", "Afeez Olanrewaju", "Jimoh Nurudeen Oluwaseun"]  # Corresponding full names
-original_amounts = [207665, 100000, 38500, 200000, 200000]  # Corresponding original amounts
-binomialBetBotEmail = "ezekielgadzama23@gmail.com"
-
 ###########################################################
-recipients = ["ezekielgadzama17@gmail.com"]
-fullnames = ["Ezekiel John Gadzama"]
-original_amounts = [400000]
-
+recipients = ["ezekielgadzama17@gmail.com", "Adesijioyindamola71@gmail.com"
+    , "adebolu.adewoyin@gmail.com", "blackboj@proton.me", "jimohnurudeen1256@gmail.com",
+              "Kingsleyeke101@gmail.com","Chrixs.barney@gmail.com"]  # Add more emails as needed
+fullnames = ["Ezekiel John Gadzama", "Adesiji oyindamola boluwatife",
+             "Adewoyin Daniel Adebolu", "Afeez Olanrewaju", "Jimoh Nurudeen Oluwaseun",
+             "Kingsley Nkemdi Ekechukwu","Christian Bassey"]  # Corresponding full names
+original_amounts = [209000, 100000, 38500, 200000, 200000,50000,400000]  # Corresponding original amounts # other: 988500
+binomialBetBotEmail = "ezekielgadzama23@gmail.com"
 
 #######################################################
 
@@ -112,7 +109,7 @@ def send_profit_email(passwordT):
 
     while True:
         if not passwordT:
-            time.sleep(13 * 60 * 60)  # Sleep for 13 hours
+            time.sleep(8 * 60 * 60)  # Sleep for 13 hours
             print("Sending profit message to clients")
         # else:
         #     print("Generating password, contact the bot admin for your password\nPassword is only valid once every 30 days")
@@ -528,6 +525,7 @@ class Bet9jaBot:
                     inter += 1
                     if inter > 2:
                         result = random.choice(["O", "E"])
+                        print(f"result was not found and a random result was chosen as {result}")
                         break
                     time.sleep(3)
 
@@ -679,9 +677,9 @@ class Bet9jaBot:
 
                     # Calculate sleep duration
                     sleep_duration = (match_datetime - current_time).total_seconds()
-                    if sleep_duration > 9000:
-                        print(f"sleeping for: {(sleep_duration - 8500) / 3600} hours")
-                        self.need_sleep = sleep_duration - 8500
+                    if sleep_duration > 5400:
+                        print(f"sleeping for: {(sleep_duration - 5400) / 3600} hours")
+                        self.need_sleep = sleep_duration - 5400
                         return
 
                     try:
