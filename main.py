@@ -768,7 +768,7 @@ class Bet9jaBot:
             print('Login successful')
             return True
         except Exception as e:
-            print(f'An error occurred during login:')
+            print(f'An error occurred during login: {e}')
             self.driver.refresh()
             return False
 
