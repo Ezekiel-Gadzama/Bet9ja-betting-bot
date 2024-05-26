@@ -6,6 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 import numpy as np
 import pytz
 import math
@@ -167,9 +169,15 @@ def start_email_thread(passwordT):
 
 
 start_email_thread(False)  # to be able to send profit email
-# Initialize the webdriver instances outside of Bet9jaBot class
-driver = webdriver.Chrome()
-live_score_driver = webdriver.Chrome()
+chrome_options = Options()
+chrome_options.add_argument('--headless')
+chrome_options.add_argument('--no-sandbox')
+chrome_options.add_argument('--disable-dev-shm-usage')
+
+# Initialize the webdriver instances with the options
+driver = webdriver.Chrome(options=chrome_options)
+live_score_driver = webdriver.Chrome(options=chrome_options)
+
 # Define a lock and condition variable
 pick_a_match_lock = threading.Lock()
 won_lock = threading.Lock()
@@ -386,7 +394,7 @@ class Bet9jaBot:
                 tried += 1
                 self.live_score_driver.quit()
                 # Create a new instance of the driver
-                self.live_score_driver = webdriver.Chrome()  # Adjust this line based on your driver
+                self.live_score_driver = webdriver.Chrome(options=chrome_options)  # Adjust this line based on your driver
                 live_score_driver = self.live_score_driver
                 self.live_score_driver.set_window_size(400, 800)
                 self.live_score_driver.set_window_position(0, 0)
