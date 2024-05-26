@@ -41,7 +41,6 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_driver_path = "C:\Program Files\chromedriver"
 driver = webdriver.Chrome(options=chrome_options)
 
 # Credentials
@@ -58,6 +57,7 @@ login_xpath = '//*[@id="j_page_header"]/div[1]/div/div[1]/div[1]/div[2]/div[3]/d
 find_and_fill_input(driver, username_xpath, username, "username")
 find_and_fill_input(driver, password_xpath, password, "password")
 click_element(driver, login_xpath)
+print("Login susss")
 
 print(driver.title)
 
