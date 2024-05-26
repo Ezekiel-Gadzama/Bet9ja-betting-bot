@@ -750,7 +750,7 @@ class Bet9jaBot:
         try:
             # Handle popups if present
             self.handle_popups()
-            login_button = WebDriverWait(self.driver, 4).until(
+            login_button = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-primary-m.btn-login'))
             )
             login_button.click()
@@ -759,7 +759,7 @@ class Bet9jaBot:
             # Find and fill in the password field
             self.fill_input_field(By.ID, "password", self.password)
             # Click on the login button
-            login_button = WebDriverWait(self.driver, 4).until(
+            login_button = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-primary-l.mt20'))
             )
             login_button.click()
