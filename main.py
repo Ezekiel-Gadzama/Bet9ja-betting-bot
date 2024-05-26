@@ -42,7 +42,7 @@ chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
 chrome_driver_path = "C:\Program Files\chromedriver"
-driver = webdriver.Chrome()
+driver = webdriver.Chrome(options=chrome_options)
 
 # Credentials
 username = "7042280970"
