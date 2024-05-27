@@ -22,6 +22,7 @@ driver = webdriver.Chrome(options=chrome_options)
 driver.set_window_size(1920, 1080)
 try:
     driver.get("https://sports.bet9ja.com/")
+    print("loaded completely")
 except:
     print("loading page failed")
 
@@ -30,6 +31,7 @@ try:
     error_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//span[contains(text(), \"This site can’t be reached\")]"))
     )
+    print("found")
     if error_element:
         print("Page can't be reached")
         driver.quit()
@@ -50,6 +52,7 @@ login_xpath = '//*[@id="header_item"]/div/div/div/div[2]/div[3]/div[2]/div[1]/di
 
 time.sleep(5)
 max_retries = 3
+print("time to login")
 
 try:
     element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, login_popup_selector)))
