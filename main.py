@@ -12,7 +12,7 @@ firefox_options.binary_location = '/usr/bin/firefox'  # Set Firefox binary locat
 firefox_options.headless = True
 
 
-driver = webdriver.Firefox(options=firefox_options)
+driver = webdriver.Firefox()
 
 # Credentials
 username = "ezekielgadzama"
