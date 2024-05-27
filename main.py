@@ -8,11 +8,9 @@ from selenium.common.exceptions import TimeoutException
 
 # Driver setup
 firefox_options = Options()
-firefox_options.binary_location = '/usr/bin/firefox'  # Set Firefox binary location
 firefox_options.headless = True
 
-
-driver = webdriver.Firefox()
+driver = webdriver.Firefox(options=firefox_options)
 
 # Credentials
 username = "ezekielgadzama"
