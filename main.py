@@ -1,39 +1,14 @@
 import time
 from selenium import webdriver
-from selenium.common import TimeoutException
+from selenium.webdriver.chrome import options
+from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
 
-def find_and_fill_input(driver, xpath, input_value, input_name):
-    """
-    Locates an input field by XPath, clears it, and enters the provided value.
 
-    Args:
-        driver: The Selenium WebDriver instance.
-        xpath: The XPath locator for the input field.
-        input_value: The value to enter into the field.
-        input_name: A descriptive name for the input field.
-    """
-    try:
-        input_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
-        input_element.clear()
-        input_element.send_keys(input_value)
-        print(f"{input_name.capitalize()} input value: {input_element.get_attribute('value')}")
-    except TimeoutException:
-        print(f"Error: Timeout waiting for {input_name} field.")
-
-def click_element(driver, xpath):
-    """
-    Locates an element by XPath and clicks it if it's clickable.
-    """
-    try:
-        element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, xpath)))
-        element.click()
-    except TimeoutException:
-        print(f"Error: Timeout waiting for element to be clickable: {xpath}")
 
 
 # Driver setup
@@ -41,26 +16,77 @@ chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument('--disable-dev-shm-usage')
+chrome_options.add_argument('--disable-popup-blocking')
+chrome_options.add_argument('--disable-notifications')
+
+
+chrome_driver_path = "C:\Program Files\chromedriver"
 driver = webdriver.Chrome(options=chrome_options)
 
 # Credentials
-username = "7042280970"
-password = "Morenigbade1$"
+username = "ezekielgadzama"
+password = "Ezekiel23"
 
 # Navigation and login
-driver.get("https://www.sportybet.com/ng/")
+driver.set_window_size(1920, 1080)
+driver.get("https://sports.bet9ja.com/")
 
-username_xpath = '//*[@id="j_page_header"]/div[1]/div/div[1]/div[1]/div[2]/div[2]/div[1]/input'
-password_xpath = '//*[@id="j_page_header"]/div[1]/div/div[1]/div[1]/div[2]/div[3]/div[1]/input'
-login_xpath = '//*[@id="j_page_header"]/div[1]/div/div[1]/div[1]/div[2]/div[3]/div[1]/button'
+username_id = 'username'
+password_id = 'password'
+login_popup_selector = '#header_item > div > div > div > div.h-ml__acc > div:nth-child(3) > div.btn-primary-m.btn-login'
+login_xpath = '//*[@id="header_item"]/div/div/div/div[2]/div[3]/div[2]/div[1]/div[3]'
 
-find_and_fill_input(driver, username_xpath, username, "username")
-find_and_fill_input(driver, password_xpath, password, "password")
-click_element(driver, login_xpath)
-print("Login susss")
+# Retry logic to handle StaleElementReferenceException
 
-print(driver.title)
+time.sleep(5)
+max_retries = 3
+# for attempt in range(max_retries):
+#     try:
+#         # Wait for the element to be clickable
+#         element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, login_popup_selector)))
+#         element.click()
+#         break  # Exit loop if click is successful
+#     except StaleElementReferenceException:
+#         if attempt < max_retries - 1:
+#             continue  # Retry
+#         else:
+#             raise  # Reraise the last exception
 
-# Wait and close (adjust as needed)
-time.sleep(30)
-driver.quit()
+
+
+try:
+
+    element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, login_popup_selector)))
+    element.click()
+    # Wait for the input field to be visible
+    username_field = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.XPATH, '//*[@id="username"]'))
+    )
+
+    password_field = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.XPATH, '//*[@id="password"]'))
+    )
+
+    # Click the input field
+    username_field.click()
+    time.sleep(3)
+    username_field.click()
+    username_field.send_keys(username)
+
+    password_field.click()
+    time.sleep(3)
+    password_field.click()
+    password_field.send_keys(password)
+
+    login = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#header_item > div > div > div > div.h-ml_acc > div:nth-child(3) > div.login_popup.open > div.form > div.btn-primary-l.mt20')))
+    login.click()
+
+    # Add more interactions as needed...
+
+except Exception as e:
+    print(f"An error occurred: {e}")
+finally:
+    # Keep the browser open for inspection
+    input("Press Enter to close the browser...")
+    driver.quit()
