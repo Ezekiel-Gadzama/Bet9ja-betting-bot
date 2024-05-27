@@ -8,7 +8,9 @@ from selenium.common.exceptions import TimeoutException
 
 # Driver setup
 firefox_options = Options()
+firefox_options.binary_location = '/usr/bin/firefox'  # Set Firefox binary location
 firefox_options.headless = True
+
 
 driver = webdriver.Firefox(options=firefox_options)
 
@@ -38,7 +40,7 @@ try:
     # Click login button
     login_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '#header_item > div > div > div > div.h-ml__acc > div:nth-child(3) > div.login_popup.open > div.form > div.btn-primary-l.mt20')))
     login_button.click()
-    print("login sucessful")
+    print("Login successful")
 
     # Add more interactions as needed...
 
