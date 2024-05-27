@@ -6,7 +6,12 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import StaleElementReferenceException, TimeoutException, NoSuchElementException, WebDriverException
+from selenium.common.exceptions import (
+    StaleElementReferenceException, 
+    TimeoutException, 
+    NoSuchElementException, 
+    WebDriverException
+)
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG,
@@ -36,6 +41,19 @@ try:
     logger.info("Navigating to Bet9ja...")
     driver.get("https://sports.bet9ja.com/")
     logger.info("Page loaded.")
+
+    # Check if the error message is displayed
+    try:
+        error_message = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.XPATH, '//span[contains(text(), "This site can’t be reached")]'))
+        )
+        if error_message:
+            logger.error("This site can’t be reached")
+            print("This site can’t be reached")
+            driver.quit()
+            exit()
+    except TimeoutException:
+        logger.info("No error message found, proceeding with login.")
 
     username_id = 'username'
     password_id = 'password'
