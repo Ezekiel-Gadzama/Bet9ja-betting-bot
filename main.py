@@ -56,6 +56,7 @@ print("time to login")
 
 try:
     element = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, login_popup_selector)))
+    print("reach here")
     element.click()
     # Wait for the input fields to be visible
     username_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="username"]')))
