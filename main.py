@@ -750,9 +750,11 @@ class Bet9jaBot:
         try:
             # Handle popups if present
             self.handle_popups()
+            time.sleep(4)
             login_button = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-primary-m.btn-login'))
             )
+            print("got here")
             login_button.click()
             # Find and fill in the username field
             self.fill_input_field(By.ID, "username", self.username)
