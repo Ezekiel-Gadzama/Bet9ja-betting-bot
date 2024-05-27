@@ -21,7 +21,7 @@ driver = webdriver.Chrome(options=chrome_options)
 # Navigation and error check
 driver.set_window_size(1920, 1080)
 try:
-    driver.get("https://sports.bet9ja.com/")
+    driver.get("https://sports.bet9ja.com/sport/soccer/1")
     print("loaded completely")
 except:
     print("loading page failed")
