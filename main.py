@@ -16,7 +16,7 @@ chrome_options.add_argument('--disable-popup-blocking')
 chrome_options.add_argument('--disable-notifications')
 
 chrome_driver_path = "C:\\Program Files\\chromedriver"
-driver = webdriver.Chrome(service=Service(chrome_driver_path), options=chrome_options)
+driver = webdriver.Chrome(options=chrome_options)
 
 # Navigation and error check
 driver.set_window_size(1920, 1080)
