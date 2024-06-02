@@ -18,13 +18,12 @@ import logging
 import sys
 import os
 
-
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 10  # advice to use a minimum of 5
 potential_monthly_Profit = 7
-amount_to_use = 1200000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 400000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -32,8 +31,9 @@ average_odd = 1.85
 Default_account_balance = 0
 sum_of_all_profit_made = 0
 original_amount_to_use = amount_to_use
-# BotPassword = None
+BotPassword = None
 current_amount = amount_to_use
+listOfNotFoundMatchIndex = []
 # fullname = input("Enter Full name: ")
 # username = input("Enter bet9ja username: ")
 # password = input("Enter bet9ja password: ")
@@ -86,22 +86,27 @@ print("This is a print statement")
 ###########################################################
 recipients = ["ezekielgadzama17@gmail.com", "Adesijioyindamola71@gmail.com"
     , "adebolu.adewoyin@gmail.com", "blackboj@proton.me", "jimohnurudeen1256@gmail.com",
-              "Kingsleyeke101@gmail.com","Chrixs.barney@gmail.com","oluabikoye@outlook.com"]  # Add more emails as needed
+              "Kingsleyeke101@gmail.com", "Chrixs.barney@gmail.com",
+              "oluabikoye@outlook.com"]  # Add more emails as needed
 fullnames = ["Ezekiel John Gadzama", "Adesiji oyindamola boluwatife",
              "Adewoyin Daniel Adebolu", "Afeez Olanrewaju", "Jimoh Nurudeen Oluwaseun",
-             "Kingsley Nkemdi Ekechukwu","Christian Bassey","Olu Abikoye"]  # Corresponding full names
-original_amounts = [158300, 100000, 38500, 200000, 200000,50000,400000,53200]  # Corresponding original amounts # other: 1041700
+             "Kingsley Nkemdi Ekechukwu", "Christian Bassey", "Olu Abikoye"]  # Corresponding full names
+original_amounts = [200000, 100000, 38500, 200000, 200000, 50000, 400000,
+                    53200]  # Corresponding original amounts # other: 1041700
 binomialBetBotEmail = "ezekielgadzama23@gmail.com"
 
 #######################################################
+
+# Shared flag to stop the thread
+should_stop_event = threading.Event()
 
 
 def send_profit_email(passwordT):
     global sum_of_all_profit_made
     global current_amount
     global original_amount_to_use
-
-    # global BotPassword
+    global should_stop_event
+    global BotPassword
 
     def generate_password():
         characters = string.ascii_letters + string.digits
@@ -112,8 +117,9 @@ def send_profit_email(passwordT):
         if not passwordT:
             time.sleep(8 * 60 * 60)  # Sleep for 13 hours
             print("Sending profit message to clients")
-        # else:
-        #     print("Generating password, contact the bot admin for your password\nPassword is only valid once every 30 days")
+        else:
+            print(
+                "Generating password, contact the bot admin for your password\nPassword is only valid once every 30 days")
 
         sender_email = "afeezbolajiola@gmail.com"  # Replace with your email
         password = "mtek abgk sbwh zjce"  # Replace with your password
@@ -126,16 +132,16 @@ def send_profit_email(passwordT):
             message["To"] = recipient
 
             # Set subject based on passwordT
-            # if passwordT:
-            #     message["Subject"] = f"{fullname} betting bot password"
-            #     message_body = f"Password: {generate_password()}"
-            # else:
-            message["Subject"] = f"{fullname} available balance"
-            user_current_amount = (original_amount / original_amount_to_use) * current_amount
-            binomial_commission = ((user_current_amount - original_amount) * 0.8)
-            if binomial_commission < 0:
-                binomial_commission = 0
-            message_body = f"Total balance in account is: {user_current_amount}\nBinomial bet commission: {binomial_commission}\nYour available balance is: {(user_current_amount - binomial_commission)}"
+            if passwordT:
+                message["Subject"] = f"{fullname} betting bot password"
+                message_body = f"Password: {generate_password()}"
+            else:
+                message["Subject"] = f"{fullname} available balance"
+                user_current_amount = (original_amount / original_amount_to_use) * current_amount
+                binomial_commission = ((user_current_amount - original_amount) * 0.8)
+                if binomial_commission < 0:
+                    binomial_commission = 0
+                message_body = f"Total balance in account is: {user_current_amount}\nBinomial bet commission: {binomial_commission}\nYour available balance is: {(user_current_amount - binomial_commission)}"
 
             # Attach message body
             message.attach(MIMEText(message_body, "plain"))
@@ -147,18 +153,21 @@ def send_profit_email(passwordT):
                 server.sendmail(sender_email, binomialBetBotEmail, message.as_string())
                 print(f"Message sent to {fullname}")
 
-        # if passwordT:
-        #     time.sleep(60 * 60 * 24 * 30)
-        #     raise SystemExit("30 days duration expired. You should contact the admin")
+        if passwordT:
+            days = 29
+            print(f"going to sleep for {days} days")
+            time.sleep(60 * 60 * 24 * days)
+            should_stop_event.set()
+            print("Ready to stop, terminating thread one by one")
 
 
 def start_email_thread(passwordT):
     email_thread = threading.Thread(target=send_profit_email, args=(passwordT,))
-    email_thread.daemon = True
     email_thread.start()
 
 
 # # Start the email sending thread
+# start_email_thread(False)  # to be able to send profit email
 
 # start_email_thread(True)  # To get password
 # userPassword = input("Enter the one time bot password: ")
@@ -167,7 +176,6 @@ def start_email_thread(passwordT):
 #     raise SystemExit("Incorrect password. Terminating the program.")
 
 
-start_email_thread(False)  # to be able to send profit email
 # Initialize the webdriver instances outside of Bet9jaBot class
 driver = webdriver.Chrome()
 live_score_driver = webdriver.Chrome()
@@ -177,6 +185,7 @@ won_lock = threading.Lock()
 login_lock = threading.Lock()
 place_bet_lock = threading.Lock()
 live_score_lock = threading.Lock()
+
 
 class Bet9jaBot:
     def __init__(self, username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
@@ -202,10 +211,9 @@ class Bet9jaBot:
         self.betting_odd_even = betting_odd_even
         self.sleep_duration = 0
         self.match_starting_time = None
-        self.need_sleep = 0
         self.find_match_time = None
         self.thread_trails = 0
-
+        self.match_PST = False
     def balance_clearance(self):
         global Default_account_balance
         """
@@ -380,7 +388,7 @@ class Bet9jaBot:
             con += 1
             # Quit the current driver
             global live_score_driver
-            if tried >= 3:
+            if tried >= 6:
                 print(f"It couldn't find result after several trials of {given_home_team} vs {given_away_team}")
                 return random.choice(["O", "E"])
             if con % 3 == 0:
@@ -392,7 +400,7 @@ class Bet9jaBot:
                 self.live_score_driver.set_window_size(400, 800)
                 self.live_score_driver.set_window_position(0, 0)
                 self.live_score_driver.get("http://www.goals365.com/feed/soccer/")
-            else:
+            elif con % 2:  # this will make it only refresh when it is finding the result of the match
                 self.live_score_driver = live_score_driver
                 self.live_score_driver.refresh()
             time.sleep(4)
@@ -431,12 +439,17 @@ class Bet9jaBot:
             outer_break = False  # Flag to indicate if we need to break out of the outer loop
             if con > 5:
                 print(f"competition_tables length: {len(competition_tables)}")
+            numberOfError = 0
             for table in competition_tables:
+                if numberOfError > 5:
+                    time.sleep(7)
+                    break
                 try:
                     game_containers = WebDriverWait(table, 10).until(
                         EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[id^='s0gametr']"))
                     )
                 except Exception as e:
+                    numberOfError += 1
                     print(f"Exception occurred while waiting for game containers: {e}")
                     continue
 
@@ -475,12 +488,16 @@ class Bet9jaBot:
                         if con % 4 == 0 or con % 5 == 0:
                             print(
                                 f"{home_team_list} compare {given_home_team_list}   and  {away_team_list} compare {given_away_team_list} : {start_time} = ={self.find_match_time} == {self.match_starting_time}")
+
+                        timeIs = False
+                        if start_time == self.find_match_time or start_time == self.match_starting_time or tried >= 4:
+                            timeIs = True
+
                         if ((set(home_team_list).intersection(given_home_team_list) and
                              set(away_team_list).intersection(given_away_team_list)) or
                             (set(home_team_list).intersection(given_home_team_list) and
                              set(home_team_list).intersection(
-                                 given_away_team_list))) and (
-                                start_time == self.find_match_time or start_time == self.match_starting_time):
+                                 given_away_team_list))) and timeIs:
 
                             print(f"Found: {home_team_list} vs {away_team_list}")
                             if (match_status == "Pst" or match_status == "-") and find:
@@ -496,7 +513,7 @@ class Bet9jaBot:
                                 return "O" if total_score % 2 != 0 else "E"
                             elif match_status == "Pst" or match_status == "-":
                                 print("Match was Postponed after betting")
-                                return random.choice(["O", "E"])  # Return random "O" or "E" for postponed matches
+                                return "Pst"
 
                             outer_break = True
                     except Exception as e:
@@ -508,8 +525,8 @@ class Bet9jaBot:
             if find:
                 print("Not Found")
                 return "Not Found"
-            print("100 seconds")
-            time.sleep(100)
+            print("200 seconds")
+            time.sleep(200)
 
     def has_won(self):
         with won_lock:
@@ -539,12 +556,16 @@ class Bet9jaBot:
             self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
             print("Won the match")
             return True
+        elif result == "Pst":
+            self.match_PST = True
+            return False
         elif result != "No result":
             print("Lost the match")
             self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
             return False
 
     def pick_a_match(self):
+        global listOfNotFoundMatchIndex
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
@@ -559,9 +580,9 @@ class Bet9jaBot:
                 match_elements = self.driver.find_elements(By.CSS_SELECTOR,
                                                            '.sports-table .table-f')  # Adjusted CSS selector
             except:
-                time.sleep(600)
+                print("pick a match error 2 sleeping for 120 seconds")
+                time.sleep(120)
                 self.login()
-                self.driver.refresh()
                 self.handle_popups()
                 self.handle_upcoming_tab()
                 continue
@@ -590,11 +611,11 @@ class Bet9jaBot:
                 first_match_seconds_after_midnight = first_match_time_only.hour * 3600 + first_match_time_only.minute * 60 + first_match_time_only.second
 
                 # Check if the first match starts in less than 4 minutes
-                if abs(first_match_seconds_after_midnight - seconds_after_midnight) < 200:
-                    print("sleeping to pick another match instead")
+                if abs(first_match_seconds_after_midnight - seconds_after_midnight) < 240:
+                    print("sleeping to pick another match instead: wait for 240 seconds")
+                    listOfNotFoundMatchIndex = []
                     time.sleep(100)
                     self.login()
-                    self.driver.refresh()
                     time.sleep(3)
                     self.handle_popups()
                     self.handle_upcoming_tab()
@@ -614,24 +635,53 @@ class Bet9jaBot:
                         0]  # Assuming the time is the first part of the match text
                 except:
                     break
+                lagos_tz = pytz.timezone('Africa/Lagos')
+                current_time = datetime.now(lagos_tz)
+                # Get the current date and time
+                self.match_starting_time = match.text.split()[0]
+                current_year = current_time.year
+                current_month = current_time.month
+                current_day = current_time.day
+
+                # Construct the datetime object for the match time
+                match_datetime_str = f"{current_day} {current_month} {current_year} {self.match_starting_time}"
+                match_datetime_naive = datetime.strptime(match_datetime_str, "%d %m %Y %H:%M")
+
+                # Make match datetime offset-aware
+                match_datetime = lagos_tz.localize(match_datetime_naive)
+
+                # If match time is before current time, adjust to next day
+                if match_datetime < current_time:
+                    match_datetime += timedelta(days=1)
+
+                # Calculate sleep duration
+                sleep_duration = (match_datetime - current_time).total_seconds()
                 try:
                     """" (self.find_match_time == first_match_time) and """
-                    if (self.get_odd_or_even_score(match.text.splitlines()[1], match.text.splitlines()[2],
-                                                   True) == "Found"):
-                        my_match.append(match)
+                    if index not in listOfNotFoundMatchIndex and sleep_duration < 6000:
+                        if (self.get_odd_or_even_score(match.text.splitlines()[1], match.text.splitlines()[2],
+                                                       True) == "Found"):
+                            my_match.append(match)
+                        else:
+                            print("not here")
+                            listOfNotFoundMatchIndex.append(index)
+                            print(f"{match.text.splitlines()[1]} vs {match.text.splitlines()[2]} ADDED TO list of not found")
+                            plus += 1
                     else:
-                        print("not here")
                         plus += 1
                 except Exception as e:
                     print(f"Exception {e}")
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
 
+            if len(my_match) < 3:
+                listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
+
             if len(my_match) == 0:
                 print("Length is equal zero")
-                time.sleep(600)
+                print("sleeping for 120 seconds since length is zero")
+                time.sleep(120)
                 self.login()
-                self.driver.refresh()
                 self.handle_popups()
                 self.handle_upcoming_tab()
                 self.pick_a_match()
@@ -639,50 +689,8 @@ class Bet9jaBot:
                 try:
                     print("myMatch size: ", len(my_match))
                     match_to_bet = random.choice(my_match)
-                    match_to_bet_text_rows = match_to_bet.text.splitlines()  # Split the text into rows
-                    if self.match_starting_time is not None:
-                        print("self.match_starting_time is not None")
-                        b = 0
-                        while self.match_starting_time != match_to_bet.text.split()[0] and b < 10:
-                            match_to_bet = random.choice(my_match)
-                            b += 1
-                        if b < 10:
-                            print("match with the same time is gotten")
-                        else:
-                            print("match with the same time was not gotten: Another match has been chosen")
-                    else:
-                        print("self.match_starting_time = None")
-
                     self.match_starting_time = match_to_bet.text.split()[0]
-                    lagos_tz = pytz.timezone('Africa/Lagos')
-                    current_time = datetime.now(lagos_tz)
-
-                    # Get the current date and time
-                    current_year = current_time.year
-                    current_month = current_time.month
-                    current_day = current_time.day
-
-                    # Extract the time string from matchToBet text
-                    match_time_str = match_to_bet.text.split()[0]
-
-                    # Construct the datetime object for the match time
-                    match_datetime_str = f"{current_day} {current_month} {current_year} {match_time_str}"
-                    match_datetime_naive = datetime.strptime(match_datetime_str, "%d %m %Y %H:%M")
-
-                    # Make match datetime offset-aware
-                    match_datetime = lagos_tz.localize(match_datetime_naive)
-
-                    # If match time is before current time, adjust to next day
-                    if match_datetime < current_time:
-                        match_datetime += timedelta(days=1)
-
-                    # Calculate sleep duration
-                    sleep_duration = (match_datetime - current_time).total_seconds()
-                    if sleep_duration > 5400:
-                        print(f"sleeping for: {(sleep_duration - 5400) / 3600} hours")
-                        self.need_sleep = sleep_duration - 5400
-                        return
-
+                    match_to_bet_text_rows = match_to_bet.text.splitlines()  # Split the text into rows
                     try:
                         self.listOfAllMatch.append(match_to_bet)
                         match_to_bet.click()
@@ -705,17 +713,17 @@ class Bet9jaBot:
                         self.handle_upcoming_tab()
                         self.pick_a_match()
                 except:
-                    time.sleep(600)
+                    print("pick a match error 1 sleeping for 120 seconds")
+                    time.sleep(120)
                     self.login()
-                    self.driver.refresh()
                     self.handle_popups()
                     self.handle_upcoming_tab()
                     self.pick_a_match()
 
         else:
-            time.sleep(600)
+            print("pick a match error 2 sleeping for 120 seconds")
+            time.sleep(120)
             self.login()
-            self.driver.refresh()
             self.handle_popups()
             self.handle_upcoming_tab()
             self.pick_a_match()
@@ -766,6 +774,7 @@ class Bet9jaBot:
             return False
 
     def handle_upcoming_tab(self):
+        time.sleep(5)
         while True:
             try:
                 # Find and click on the "Upcoming" tab
@@ -782,7 +791,8 @@ class Bet9jaBot:
                 break
             except Exception as e:
                 print(f"An error occurred while handling the upcoming tab: {e}")
-                time.sleep(600)
+                self.driver.get("https://sports.bet9ja.com/sport/soccer/1")
+                time.sleep(100)
                 try:
                     self.handle_popups()
                     if not self.login():
@@ -840,10 +850,20 @@ class Bet9jaBot:
             print('Failed to place bet')
 
     def bet_num_games_with_trials(self):
-        self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
-        onStart = True
-        counting_fail_trials = 0
+        ############################################################
+        counting_fail_trials = random.randint(0, 2)
+
+        for i in range(counting_fail_trials):
+            if i == 0:
+                self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
+            else:
+                self.listOfAllOdds.append(1.85)
+                self.calculate_next_stakes(self.listOfAllOdds[-1])
+
+
+        ######################################################################
+        print(f"counting_fail_trials: {counting_fail_trials}   self: {self.listOfAllAmountPlaced}")
         total_failed_trials = 0
         listOfAllTotalFailedTrials = []
         original_number_of_trials = self.number_of_trials
@@ -871,7 +891,7 @@ class Bet9jaBot:
                 self.ListOfAllWinMatch = []
                 print(f"starting stake: {self.starting_stake}  number of trials: {self.number_of_trials}")
 
-            trial = 0
+            trial = counting_fail_trials
             while trial < self.number_of_trials - 1:
                 with pick_a_match_lock:
                     time.sleep(16)  # very important sleep to make the previous thread finish betting. don't change
@@ -881,23 +901,16 @@ class Bet9jaBot:
                     self.pick_a_match()
                     print("finish waiting")
 
-                if self.need_sleep > 0:
-                    print("Now Now sleeping")
-                    time.sleep(self.need_sleep)  # Sleep for the required duration
-                    self.thread_trails -= 1
-                    self.need_sleep = 0
-                    self.handle_popups()
-                    continue
                 print(f"current thread trials is {self.thread_trails}")
                 with place_bet_lock:
-                    next_stake = self.starting_stake
                     print("ready to bet")
+                    if trial == 0:
+                        next_stake = self.starting_stake
+                        self.listOfAllAmountPlaced.append(self.starting_stake)
+                    elif trial != 0:
+                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1])
+                        print("trial is not zero")
 
-                    if trial != 0:
-                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[trial])
-                    elif not onStart:
-                        self.listOfAllAmountPlaced.append(next_stake)
-                    onStart = False
                     self.place_bet(next_stake)
                     trial += 1
                     print(
@@ -930,11 +943,25 @@ class Bet9jaBot:
                     self.listOfAllLostMatch = []
                     self.listOfAllMatchName = []
                     self.ListOfAllWinMatch = []
+                    if should_stop_event.is_set():
+                        print("Stopping the current thread after winning the match.")
+                        return
                     break
                 else:
                     print("done losing")
                     counting_fail_trials += 1
                     total_failed_trials += 1
+                    print(f"number of Failed trials is: {total_failed_trials}")
+                    if self.match_PST:
+                        print("done losing but it did not lose, it was postponed")
+                        self.match_PST = False
+                        counting_fail_trials -= 1
+                        total_failed_trials -= 1
+                        self.listOfAllOdds.pop()
+                        self.listOfAllAmountPlaced.pop()
+                        self.listOfAllMatchName.pop()
+                        trial -= 1
+
             print(f"List of all failed trials before win: {listOfAllTotalFailedTrials}")
 
     def run(self):
@@ -969,7 +996,7 @@ print(f"Winning probability: {1 - estimated_risk}    Lost rate: {bet9ja_bot.num_
 listOfAllBetInstance = [
     Bet9jaBot(username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
               potential_monthly_Profit, betType, "E" if i % 2 == 0 else "O")
-    for i in range(bet9ja_bot.num_bet_per_hour())  # bet9ja_bot.num_bet_per_hour()
+    for i in range(4)  # bet9ja_bot.num_bet_per_hour()
 ]
 
 # Create threads for all instances except the first one
@@ -981,6 +1008,7 @@ for thread in threads:
     thread.start()
 
 bet9ja_bot.run()
+print(f"Number of threads: {threading.active_count()}")
 
 # Wait for all threads to complete
 for thread in threads:
