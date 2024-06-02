@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 10  # advice to use a minimum of 5
 potential_monthly_Profit = 7
-amount_to_use = 400000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 1250000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -115,7 +115,7 @@ def send_profit_email(passwordT):
 
     while True:
         if not passwordT:
-            time.sleep(8 * 60 * 60)  # Sleep for 13 hours
+            time.sleep(13 * 60 * 60)  # Sleep for 13 hours
             print("Sending profit message to clients")
         else:
             print(
@@ -167,7 +167,7 @@ def start_email_thread(passwordT):
 
 
 # # Start the email sending thread
-# start_email_thread(False)  # to be able to send profit email
+start_email_thread(False)  # to be able to send profit email
 
 # start_email_thread(True)  # To get password
 # userPassword = input("Enter the one time bot password: ")
@@ -185,8 +185,9 @@ won_lock = threading.Lock()
 login_lock = threading.Lock()
 place_bet_lock = threading.Lock()
 live_score_lock = threading.Lock()
-
-
+shareDistribution = None
+globalCount = 0
+globalDividedNumber = 290
 class Bet9jaBot:
     def __init__(self, username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
                  potential_monthly_Profit, betType, betting_odd_even):
@@ -612,7 +613,7 @@ class Bet9jaBot:
 
                 # Check if the first match starts in less than 4 minutes
                 if abs(first_match_seconds_after_midnight - seconds_after_midnight) < 240:
-                    print("sleeping to pick another match instead: wait for 240 seconds")
+                    print("sleeping to pick another match instead: wait for 100 seconds")
                     listOfNotFoundMatchIndex = []
                     time.sleep(100)
                     self.login()
@@ -728,10 +729,19 @@ class Bet9jaBot:
             self.handle_upcoming_tab()
             self.pick_a_match()
 
-    def calculate_next_stakes(self, odd):
+    def calculate_next_stakes(self, odd, trial):
+        global shareDistribution, globalCount, globalDividedNumber
         next_stake = int(
             (np.sum(self.listOfAllAmountPlaced) + (
                     self.starting_stake * (odd - 1) * (len(self.listOfAllAmountPlaced) + 1))) / (odd - 1))
+        if shareDistribution is not None and trial >= 3:
+            if globalCount < globalDividedNumber:
+                globalCount += 1
+                next_stake = int(next_stake + shareDistribution)
+            else:
+                globalCount = 0
+                shareDistribution = None
+
         self.listOfAllAmountPlaced.append(next_stake)
         return next_stake
 
@@ -850,6 +860,7 @@ class Bet9jaBot:
             print('Failed to place bet')
 
     def bet_num_games_with_trials(self):
+        global shareDistribution, globalDividedNumber, sum_of_all_profit_made
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         counting_fail_trials = random.randint(0, 2)
@@ -859,7 +870,7 @@ class Bet9jaBot:
                 self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
             else:
                 self.listOfAllOdds.append(1.85)
-                self.calculate_next_stakes(self.listOfAllOdds[-1])
+                self.calculate_next_stakes(self.listOfAllOdds[-1],i)
 
 
         ######################################################################
@@ -873,6 +884,7 @@ class Bet9jaBot:
             self.starting_stake = self.stake_distribution_starting_stake()
 
             if counting_fail_trials == self.number_of_trials - 1:
+                print("Trying to cover lost through Plan A")
                 self.number_of_trials -= 1
                 if self.number_of_trials <= (original_number_of_trials / 2) + 1:
                     print(
@@ -892,7 +904,9 @@ class Bet9jaBot:
                 print(f"starting stake: {self.starting_stake}  number of trials: {self.number_of_trials}")
 
             trial = counting_fail_trials
+
             while trial < self.number_of_trials - 1:
+
                 with pick_a_match_lock:
                     time.sleep(16)  # very important sleep to make the previous thread finish betting. don't change
                     global current_amount
@@ -900,15 +914,15 @@ class Bet9jaBot:
                     current_amount = self.get_account_balance()
                     self.pick_a_match()
                     print("finish waiting")
-
                 print(f"current thread trials is {self.thread_trails}")
+
                 with place_bet_lock:
                     print("ready to bet")
                     if trial == 0:
                         next_stake = self.starting_stake
                         self.listOfAllAmountPlaced.append(self.starting_stake)
                     elif trial != 0:
-                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1])
+                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1],trial)
                         print("trial is not zero")
 
                     self.place_bet(next_stake)
@@ -929,7 +943,6 @@ class Bet9jaBot:
                         self.listOfAllAmountPlaced)
                     print(
                         f"current gain: {current_gain} = ({self.listOfAllOdds[-1]} * {self.listOfAllAmountPlaced[-1]}) - {np.sum(self.listOfAllAmountPlaced)}")
-                    global sum_of_all_profit_made
                     sum_of_all_profit_made += current_gain
                     print(f"Total Profit Made: {sum_of_all_profit_made}")
                     self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
@@ -961,6 +974,14 @@ class Bet9jaBot:
                         self.listOfAllAmountPlaced.pop()
                         self.listOfAllMatchName.pop()
                         trial -= 1
+
+                    if trial >= self.number_of_trials - 1:
+                        shareDistribution = int(sum(self.listOfAllAmountPlaced) / globalDividedNumber)
+                        globalDividedNumber += globalDividedNumber
+                        self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
+                        print("Trying to cover lost through Plan B")
+                        print("start again, No fucking profit")
+                        break
 
             print(f"List of all failed trials before win: {listOfAllTotalFailedTrials}")
 
@@ -996,7 +1017,7 @@ print(f"Winning probability: {1 - estimated_risk}    Lost rate: {bet9ja_bot.num_
 listOfAllBetInstance = [
     Bet9jaBot(username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
               potential_monthly_Profit, betType, "E" if i % 2 == 0 else "O")
-    for i in range(4)  # bet9ja_bot.num_bet_per_hour()
+    for i in range(bet9ja_bot.num_bet_per_hour())  # bet9ja_bot.num_bet_per_hour()
 ]
 
 # Create threads for all instances except the first one
