@@ -218,7 +218,7 @@ class Bet9jaBot:
         self.find_match_time = None
         self.thread_trails = 0
         self.match_PST = False
-
+        self.notLoaded = 0
     def balance_clearance(self):
         global Default_account_balance
         """
@@ -381,6 +381,7 @@ class Bet9jaBot:
                 print("Goal Even Odds Value:", even_odds_value)
                 self.listOfAllOdds.append(even_odds_value)
 
+
     def get_odd_or_even_score(self, given_home_team, given_away_team, find):
         print(f"Looking for: {given_home_team} vs {given_away_team}")
 
@@ -390,6 +391,10 @@ class Bet9jaBot:
         con = 0
         tried = 0
         while True:
+            if self.notLoaded >= 5 and find:
+                print("crazy right that livescore page didn't load, so refresh")
+                self.notLoaded = 0
+                self.live_score_driver.refresh()
             con += 1
             # Quit the current driver
             global live_score_driver
@@ -521,6 +526,8 @@ class Bet9jaBot:
                                 return "Pst"
 
                             outer_break = True
+                        if find:
+                            self.notLoaded += 1
                     except Exception as e:
                         print(f"Exception occurred in here: {e}")
                         continue
@@ -571,6 +578,7 @@ class Bet9jaBot:
 
     def pick_a_match(self):
         time.sleep(5)
+        self.notLoaded = 0
         global listOfNotFoundMatchIndex
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
