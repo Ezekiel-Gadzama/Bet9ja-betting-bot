@@ -728,7 +728,6 @@ class Bet9jaBot:
 
                         self.sleep_duration = timedelta(
                             seconds=(match_datetime - datetime.now(lagos_tz)).total_seconds())
-                        print(f"The sleeping duration is: {self.sleep_duration}")
                         self.driver.back()
                         self.handle_popups()
                         self.handle_upcoming_tab()
@@ -979,6 +978,8 @@ class Bet9jaBot:
                     print(
                         f"Waiting till the match ends: match will end at {datetime.now() + self.sleep_duration + timedelta(seconds=6900)}")
                 time.sleep(self.sleep_duration.total_seconds() + 6900)
+                print(f"The sleeping duration before match starts is: {self.sleep_duration.total_seconds()}")
+                print(f"The sleeping duration is: {self.sleep_duration.total_seconds() + 6900}")
                 print("done sleeping")
 
                 if self.has_won():
