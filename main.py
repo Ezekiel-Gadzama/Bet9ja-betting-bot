@@ -978,10 +978,10 @@ class Bet9jaBot:
                     trial += 1
                     print(
                         f"Waiting till the match ends: match will end at {datetime.now() + self.sleep_duration + timedelta(seconds=6900)}")
+                    print(f"The sleeping duration before match starts is: {self.sleep_duration.total_seconds()}")
+                    print(f"The sleeping duration is: {self.sleep_duration.total_seconds() + 6900}")
+                    print("done sleeping")
                 time.sleep(self.sleep_duration.total_seconds() + 6900)
-                print(f"The sleeping duration before match starts is: {self.sleep_duration.total_seconds()}")
-                print(f"The sleeping duration is: {self.sleep_duration.total_seconds() + 6900}")
-                print("done sleeping")
 
                 if self.has_won():
                     # Get the number of threads
