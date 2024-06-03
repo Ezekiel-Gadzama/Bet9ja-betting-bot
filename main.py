@@ -113,16 +113,16 @@ def send_profit_email(passwordT):
         password = ''.join(random.choice(characters) for _ in range(10))
         return password
 
-    while True:
+    while not should_stop_event.is_set():
         if not passwordT:
-            time.sleep(15)  # Sleep for 13 hours
+            time.sleep(15)  # Sleep for 15 seconds for testing
             print("Sending profit message to clients")
         else:
             print(
                 "Generating password, contact the bot admin for your password\nPassword is only valid once every 30 days")
 
         sender_email = "afeezbolajiola@gmail.com"  # Replace with your email
-        password = "mtek abgk sbwh zjce"  # Replace with your password
+        password =  "mtek abgk sbwh zjce"  # Replace with your email password
         smtp_server = "smtp.gmail.com"  # Replace with your SMTP server
 
         for recipient, fullname, original_amount in zip(recipients, fullnames, original_amounts):
@@ -155,7 +155,7 @@ def send_profit_email(passwordT):
 
         if passwordT:
             days = 29
-            print(f"going to sleep for {days} days")
+            print(f"Going to sleep for {days} days")
             time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
             print("Ready to stop, terminating thread one by one")
@@ -164,10 +164,11 @@ def send_profit_email(passwordT):
 def start_email_thread(passwordT):
     email_thread = threading.Thread(target=send_profit_email, args=(passwordT,))
     email_thread.start()
+    return email_thread
 
 
-# # Start the email sending thread
-start_email_thread(False)  # to be able to send profit email
+# Start the email sending thread
+email_thread = start_email_thread(False)  # to be able to send profit email
 
 # start_email_thread(True)  # To get password
 # userPassword = input("Enter the one time bot password: ")
@@ -188,6 +189,8 @@ live_score_lock = threading.Lock()
 shareDistribution = None
 globalCount = 0
 globalDividedNumber = 290
+
+
 class Bet9jaBot:
     def __init__(self, username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
                  potential_monthly_Profit, betType, betting_odd_even):
@@ -215,6 +218,7 @@ class Bet9jaBot:
         self.find_match_time = None
         self.thread_trails = 0
         self.match_PST = False
+
     def balance_clearance(self):
         global Default_account_balance
         """
@@ -667,7 +671,8 @@ class Bet9jaBot:
                         else:
                             print("not here")
                             listOfNotFoundMatchIndex.append(index)
-                            print(f"{match.text.splitlines()[1]} vs {match.text.splitlines()[2]} ADDED TO list of not found")
+                            print(
+                                f"{match.text.splitlines()[1]} vs {match.text.splitlines()[2]} ADDED TO list of not found")
                             plus += 1
                     else:
                         plus += 1
@@ -720,7 +725,6 @@ class Bet9jaBot:
                         print(f"player team: {match_to_bet_text_rows[1]} vs {match_to_bet_text_rows[2]}")
                         self.listOfAllMatchName.append((match_to_bet_text_rows[1], match_to_bet_text_rows[2]))
                         print("time: ", self.match_starting_time)
-
 
                         self.sleep_duration = timedelta(
                             seconds=(match_datetime - datetime.now(lagos_tz)).total_seconds())
@@ -917,15 +921,13 @@ class Bet9jaBot:
                 self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
             else:
                 self.listOfAllOdds.append(1.85)
-                self.calculate_next_stakes(self.listOfAllOdds[-1],i)
-
+                self.calculate_next_stakes(self.listOfAllOdds[-1], i)
 
         ######################################################################
         print(f"counting_fail_trials: {counting_fail_trials}   self: {self.listOfAllAmountPlaced}")
         total_failed_trials = 0
         listOfAllTotalFailedTrials = []
         original_number_of_trials = self.number_of_trials
-
 
         while True:
             self.starting_stake = self.stake_distribution_starting_stake()
@@ -969,7 +971,7 @@ class Bet9jaBot:
                         next_stake = self.starting_stake
                         self.listOfAllAmountPlaced.append(self.starting_stake)
                     elif trial != 0:
-                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1],trial)
+                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1], trial)
                         print("trial is not zero")
 
                     self.place_bet(next_stake)
