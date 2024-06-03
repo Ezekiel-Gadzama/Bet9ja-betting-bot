@@ -115,7 +115,7 @@ def send_profit_email(passwordT):
 
     while True:
         if not passwordT:
-            time.sleep(13 * 60 * 60)  # Sleep for 13 hours
+            time.sleep(15)  # Sleep for 13 hours
             print("Sending profit message to clients")
         else:
             print(
@@ -566,6 +566,7 @@ class Bet9jaBot:
             return False
 
     def pick_a_match(self):
+        time.sleep(5)
         global listOfNotFoundMatchIndex
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
@@ -690,7 +691,25 @@ class Bet9jaBot:
                 try:
                     print("myMatch size: ", len(my_match))
                     match_to_bet = random.choice(my_match)
+
+                    # Construct the datetime object for the match time
+                    lagos_tz = pytz.timezone('Africa/Lagos')
+                    current_time = datetime.now(lagos_tz)
+                    # Get the current date and time
                     self.match_starting_time = match_to_bet.text.split()[0]
+                    current_year = current_time.year
+                    current_month = current_time.month
+                    current_day = current_time.day
+                    match_datetime_str = f"{current_day} {current_month} {current_year} {self.match_starting_time}"
+                    match_datetime_naive = datetime.strptime(match_datetime_str, "%d %m %Y %H:%M")
+
+                    # Make match datetime offset-aware
+                    match_datetime = lagos_tz.localize(match_datetime_naive)
+
+                    # If match time is before current time, adjust to next day
+                    if match_datetime < current_time:
+                        match_datetime += timedelta(days=1)
+
                     match_to_bet_text_rows = match_to_bet.text.splitlines()  # Split the text into rows
                     try:
                         self.listOfAllMatch.append(match_to_bet)
@@ -701,9 +720,11 @@ class Bet9jaBot:
                         print(f"player team: {match_to_bet_text_rows[1]} vs {match_to_bet_text_rows[2]}")
                         self.listOfAllMatchName.append((match_to_bet_text_rows[1], match_to_bet_text_rows[2]))
                         print("time: ", self.match_starting_time)
+
+
                         self.sleep_duration = timedelta(
                             seconds=(match_datetime - datetime.now(lagos_tz)).total_seconds())
-
+                        print(f"The sleeping duration is: {self.sleep_duration}")
                         self.driver.back()
                         self.handle_popups()
                         self.handle_upcoming_tab()
@@ -781,6 +802,31 @@ class Bet9jaBot:
         except Exception as e:
             print(f'An error occurred during login:')
             self.driver.refresh()
+            time.sleep(5)
+            # this is for a case where refresh is need to show login
+
+            try:
+                # Handle popups if present
+                self.handle_popups()
+                login_button = WebDriverWait(self.driver, 4).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-primary-m.btn-login'))
+                )
+                login_button.click()
+                # Find and fill in the username field
+                self.fill_input_field(By.ID, "username", self.username)
+                # Find and fill in the password field
+                self.fill_input_field(By.ID, "password", self.password)
+                # Click on the login button
+                login_button = WebDriverWait(self.driver, 4).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-primary-l.mt20'))
+                )
+                login_button.click()
+                time.sleep(3)
+                self.driver.refresh()
+                print('Login successful')
+                return True
+            except Exception as e:
+                print(f'An error occurred during login:')
             return False
 
     def handle_upcoming_tab(self):
@@ -863,6 +909,7 @@ class Bet9jaBot:
         global shareDistribution, globalDividedNumber, sum_of_all_profit_made
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
+        amount_to_use = self.amount_to_use
         counting_fail_trials = random.randint(0, 2)
 
         for i in range(counting_fail_trials):
@@ -878,7 +925,7 @@ class Bet9jaBot:
         total_failed_trials = 0
         listOfAllTotalFailedTrials = []
         original_number_of_trials = self.number_of_trials
-        amount_to_use = self.amount_to_use
+
 
         while True:
             self.starting_stake = self.stake_distribution_starting_stake()
