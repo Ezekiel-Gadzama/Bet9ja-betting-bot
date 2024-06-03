@@ -114,47 +114,47 @@ def send_profit_email(passwordT):
         return password
 
     while not should_stop_event.is_set():
-        if not passwordT:
-            time.sleep(15)  # Sleep for 15 seconds for testing
-            print("Sending profit message to clients")
-        else:
-            print(
-                "Generating password, contact the bot admin for your password\nPassword is only valid once every 30 days")
-
-        sender_email = "afeezbolajiola@gmail.com"  # Replace with your email
-        password =  "mtek abgk sbwh zjce"  # Replace with your email password
-        smtp_server = "smtp.gmail.com"  # Replace with your SMTP server
-
-        for recipient, fullname, original_amount in zip(recipients, fullnames, original_amounts):
-            # Create message object
-            message = MIMEMultipart()
-            message["From"] = sender_email
-            message["To"] = recipient
-
-            # Set subject based on passwordT
-            if passwordT:
-                message["Subject"] = f"{fullname} betting bot password"
-                message_body = f"Password: {generate_password()}"
-            else:
-                message["Subject"] = f"{fullname} available balance"
-                user_current_amount = (original_amount / original_amount_to_use) * current_amount
-                binomial_commission = ((user_current_amount - original_amount) * 0.8)
-                if binomial_commission < 0:
-                    binomial_commission = 0
-                message_body = f"Total balance in account is: {user_current_amount}\nBinomial bet commission: {binomial_commission}\nYour available balance is: {(user_current_amount - binomial_commission)}"
-
-            # Attach message body
-            message.attach(MIMEText(message_body, "plain"))
-
-            # Connect to SMTP server and send email
-            with smtplib.SMTP_SSL(smtp_server, 465) as server:
-                server.login(sender_email, password)
-                server.sendmail(sender_email, recipient, message.as_string())
-                server.sendmail(sender_email, binomialBetBotEmail, message.as_string())
-                print(f"Message sent to {fullname}")
+        # if not passwordT:
+        #     time.sleep(15)  # Sleep for 15 seconds for testing
+        #     print("Sending profit message to clients")
+        # else:
+        #     print(
+        #         "Generating password, contact the bot admin for your password\nPassword is only valid once every 30 days")
+        #
+        # sender_email = "afeezbolajiola@gmail.com"  # Replace with your email
+        # password =  "mtek abgk sbwh zjce"  # Replace with your email password
+        # smtp_server = "smtp.gmail.com"  # Replace with your SMTP server
+        #
+        # for recipient, fullname, original_amount in zip(recipients, fullnames, original_amounts):
+        #     # Create message object
+        #     message = MIMEMultipart()
+        #     message["From"] = sender_email
+        #     message["To"] = recipient
+        #
+        #     # Set subject based on passwordT
+        #     if passwordT:
+        #         message["Subject"] = f"{fullname} betting bot password"
+        #         message_body = f"Password: {generate_password()}"
+        #     else:
+        #         message["Subject"] = f"{fullname} available balance"
+        #         user_current_amount = (original_amount / original_amount_to_use) * current_amount
+        #         binomial_commission = ((user_current_amount - original_amount) * 0.8)
+        #         if binomial_commission < 0:
+        #             binomial_commission = 0
+        #         message_body = f"Total balance in account is: {user_current_amount}\nBinomial bet commission: {binomial_commission}\nYour available balance is: {(user_current_amount - binomial_commission)}"
+        #
+        #     # Attach message body
+        #     message.attach(MIMEText(message_body, "plain"))
+        #
+        #     # Connect to SMTP server and send email
+        #     with smtplib.SMTP_SSL(smtp_server, 465) as server:
+        #         server.login(sender_email, password)
+        #         server.sendmail(sender_email, recipient, message.as_string())
+        #         server.sendmail(sender_email, binomialBetBotEmail, message.as_string())
+        #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            days = 29
+            days = 26
             print(f"Going to sleep for {days} days")
             time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
@@ -168,7 +168,7 @@ def start_email_thread(passwordT):
 
 
 # Start the email sending thread
-email_thread = start_email_thread(False)  # to be able to send profit email
+email_thread = start_email_thread(True)  # to be able to send profit email
 
 # start_email_thread(True)  # To get password
 # userPassword = input("Enter the one time bot password: ")
