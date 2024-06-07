@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 10  # advice to use a minimum of 5
 potential_monthly_Profit = 7
-amount_to_use = 1250000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 1700000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -219,6 +219,25 @@ class Bet9jaBot:
         self.thread_trails = 0
         self.match_PST = False
 
+    def click_cancel_buttons(self, number_to_keep):
+        value = False
+        try:
+            print("checking to cancel previous kept betting slip")
+            # Find all the cancel buttons using the class name 'icon close'
+            cancel_buttons = self.driver.find_elements(By.CSS_SELECTOR, '.betslip__match-item .icon.close')
+            # Calculate the number of buttons to click
+            number_to_click = len(cancel_buttons) - number_to_keep
+
+            # Iterate through each cancel button and click on it, except the ones to keep
+            for i, button in enumerate(cancel_buttons):
+                if i < number_to_click:
+                    button.click()
+                    time.sleep(0.5)
+                    value = True
+            return value
+        except:
+            print("No pre-kept betting slip")
+
     def balance_clearance(self):
         global Default_account_balance
         """
@@ -364,6 +383,9 @@ class Bet9jaBot:
             even_odds_element = accordion_element.find_element(By.XPATH,
                                                                './/div[@class="market-item"][div/span[text('
                                                                ')="Even"]]//div[@class="market-odd"]')
+            self.driver.refresh()
+            time.sleep(3)
+            self.click_cancel_buttons(0)
             # Click on the odd odds element
             if self.betting_odd_even == "O":
                 odd_odds_element.click()
@@ -380,7 +402,6 @@ class Bet9jaBot:
                 # Print the value of the even odds
                 print("Goal Even Odds Value:", even_odds_value)
                 self.listOfAllOdds.append(even_odds_value)
-
 
     def get_odd_or_even_score(self, given_home_team, given_away_team, find):
         print(f"Looking for: {given_home_team} vs {given_away_team}")
@@ -571,13 +592,14 @@ class Bet9jaBot:
             return False
 
     def pick_a_match(self):
-        time.sleep(5)
+        self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
         # Create a while loop to repeat the process
         first_match_time = 0  # not needed but just to make a variable
+        match_elements = []
         while True:
             try:
                 # Wait for the table to load
@@ -638,14 +660,13 @@ class Bet9jaBot:
                 if index >= 3 + plus:  # Break the loop after the first two matches
                     break
                 try:
-                    self.find_match_time = match.text.split()[
-                        0]  # Assuming the time is the first part of the match text
-                except:
+                    timetime = match.text.split()[0]
+                    self.match_starting_time = self.find_match_time = timetime# Assuming the time is the first part of the match text
+                except Exception as e:
                     break
                 lagos_tz = pytz.timezone('Africa/Lagos')
                 current_time = datetime.now(lagos_tz)
                 # Get the current date and time
-                self.match_starting_time = match.text.split()[0]
                 current_year = current_time.year
                 current_month = current_time.month
                 current_day = current_time.day
@@ -905,9 +926,11 @@ class Bet9jaBot:
 
             # Click on the "Continue" button
             continue_button.click()
-
-        except TimeoutException:
+            return True
+        except Exception as e:
+            self.click_cancel_buttons(0)
             print('Failed to place bet')
+            return False
 
     def bet_num_games_with_trials(self):
         global shareDistribution, globalDividedNumber, sum_of_all_profit_made
@@ -957,11 +980,21 @@ class Bet9jaBot:
             while trial < self.number_of_trials - 1:
 
                 with pick_a_match_lock:
-                    time.sleep(16)  # very important sleep to make the previous thread finish betting. don't change
+                    time.sleep(20)  # very important sleep to make the previous thread finish betting. don't change
+                    print(f"Number of threads: {threading.active_count()}")
                     global current_amount
                     self.thread_trails += 1
                     current_amount = self.get_account_balance()
-                    self.pick_a_match()
+
+                    try:
+                        self.pick_a_match()
+                    except:
+                        print("This thread didn't pick a match successfully")
+                        self.driver.get("https://sports.bet9ja.com/sport/soccer/1")
+                        self.login()
+                        self.handle_popups()
+                        self.handle_upcoming_tab()
+                        continue
                     print("finish waiting")
                 print(f"current thread trials is {self.thread_trails}")
 
@@ -974,7 +1007,14 @@ class Bet9jaBot:
                         next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1], trial)
                         print("trial is not zero")
 
-                    self.place_bet(next_stake)
+                    if not self.place_bet(next_stake):
+                        try:
+                            self.listOfAllAmountPlaced.pop()
+                            self.listOfAllOdds.pop()
+                        except:
+                            print("Error popping")
+                        print("It didn't bet so we popped from list of all amount")
+                        continue
                     trial += 1
                     print(
                         f"Waiting till the match ends: match will end at {datetime.now() + self.sleep_duration + timedelta(seconds=6900)}")
