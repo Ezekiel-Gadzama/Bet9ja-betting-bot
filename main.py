@@ -232,6 +232,7 @@ class Bet9jaBot:
             for i, button in enumerate(cancel_buttons):
                 if i < number_to_click:
                     button.click()
+                    print("It cancelled a bet slip")
                     time.sleep(0.5)
                     value = True
             return value
@@ -339,6 +340,9 @@ class Bet9jaBot:
         element.send_keys(value)
 
     def dataForEachMatch(self):
+        self.driver.refresh()
+        time.sleep(3)
+        self.click_cancel_buttons(0)
         global last_match_time
         # Wait for the element to be clickable
         matchup_div = WebDriverWait(self.driver, 10).until(
@@ -383,9 +387,6 @@ class Bet9jaBot:
             even_odds_element = accordion_element.find_element(By.XPATH,
                                                                './/div[@class="market-item"][div/span[text('
                                                                ')="Even"]]//div[@class="market-odd"]')
-            self.driver.refresh()
-            time.sleep(3)
-            self.click_cancel_buttons(0)
             # Click on the odd odds element
             if self.betting_odd_even == "O":
                 odd_odds_element.click()
