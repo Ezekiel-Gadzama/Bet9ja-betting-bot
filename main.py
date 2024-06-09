@@ -21,8 +21,8 @@ import os
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 10  # advice to use a minimum of 5
-potential_monthly_Profit = 7
+number_of_trials = 9  # advice to use a minimum of 5
+potential_monthly_Profit = 60
 amount_to_use = 1700000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
@@ -154,7 +154,7 @@ def send_profit_email(passwordT):
         #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            days = 26
+            days = 7
             print(f"Going to sleep for {days} days")
             time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
@@ -423,11 +423,7 @@ class Bet9jaBot:
                 tried += 1
                 self.live_score_driver.quit()
                 # Create a new instance of the driver
-                self.live_score_driver = webdriver.Chrome()  # Adjust this line based on your driver
-                live_score_driver = self.live_score_driver
-                self.live_score_driver.set_window_size(400, 800)
-                self.live_score_driver.set_window_position(0, 0)
-                self.live_score_driver.get("http://www.goals365.com/feed/soccer/")
+                self.checking_browsers_are_open()
             elif con % 2:  # this will make it only refresh when it is finding the result of the match
                 self.live_score_driver = live_score_driver
                 self.live_score_driver.refresh()
@@ -662,7 +658,7 @@ class Bet9jaBot:
                     break
                 try:
                     timetime = match.text.split()[0]
-                    self.match_starting_time = self.find_match_time = timetime# Assuming the time is the first part of the match text
+                    self.match_starting_time = self.find_match_time = timetime  # Assuming the time is the first part of the match text
                 except Exception as e:
                     break
                 lagos_tz = pytz.timezone('Africa/Lagos')
@@ -933,6 +929,45 @@ class Bet9jaBot:
             print('Failed to place bet')
             return False
 
+    def checking_browsers_are_open(self):
+        global driver, live_score_driver
+        while True:
+            print("checking bet9ja browser is still open")
+            try:
+                # Attempt to access the driver to check if it is still open
+                current_url = driver.current_url
+                print(f"Browser is open. Current URL: {current_url}")
+                break
+            except:
+                # If accessing the driver fails, it means the browser is closed
+                print("Browser closed. Reopening...")
+                driver = webdriver.Chrome()
+                # Set the size of the windows
+                driver.set_window_size(1000, 800)
+                driver.set_window_position(540, 0)
+                driver.get("https://sports.bet9ja.com/sport/soccer/1")
+                self.login()
+                self.handle_popups()
+                self.handle_upcoming_tab()
+
+        while True:
+            print("checking livescore browser is still open")
+            try:
+                # Attempt to access the driver to check if it is still open
+                current_url = live_score_driver.current_url
+                print(f"Browser is open. Current URL: {current_url}")
+                break
+            except:
+                # If accessing the driver fails, it means the browser is closed
+                print("Browser closed. Reopening...")
+                live_score_driver = webdriver.Chrome()
+                # Set the size of the windows
+                live_score_driver.set_window_size(400, 800)
+                live_score_driver.set_window_position(0, 0)
+                live_score_driver.get("http://www.goals365.com/feed/soccer/")
+        self.driver = driver
+        self.live_score_driver = live_score_driver
+
     def bet_num_games_with_trials(self):
         global shareDistribution, globalDividedNumber, sum_of_all_profit_made
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
@@ -954,6 +989,7 @@ class Bet9jaBot:
         original_number_of_trials = self.number_of_trials
 
         while True:
+            self.checking_browsers_are_open()
             self.starting_stake = self.stake_distribution_starting_stake()
 
             if counting_fail_trials == self.number_of_trials - 1:
@@ -979,9 +1015,9 @@ class Bet9jaBot:
             trial = counting_fail_trials
 
             while trial < self.number_of_trials - 1:
-
                 with pick_a_match_lock:
                     time.sleep(20)  # very important sleep to make the previous thread finish betting. don't change
+                    self.checking_browsers_are_open()
                     print(f"Number of threads: {threading.active_count()}")
                     global current_amount
                     self.thread_trails += 1
@@ -1023,6 +1059,7 @@ class Bet9jaBot:
                     print(f"The sleeping duration is: {self.sleep_duration.total_seconds() + 6900}")
                 time.sleep(self.sleep_duration.total_seconds() + 6900)
                 print("done sleeping")
+                self.checking_browsers_are_open()
                 if self.has_won():
                     # Get the number of threads
                     num_threads = threading.active_count()
