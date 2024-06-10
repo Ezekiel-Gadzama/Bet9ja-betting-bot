@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 1700000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 850000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -893,6 +893,10 @@ class Bet9jaBot:
         return estimated_return, estimated_risk
 
     def place_bet(self, next_stake):
+        if self.get_account_balance() <= next_stake:
+            self.click_cancel_buttons(0)
+            print('Failed to place bet because account balance is lesser than stake')
+            return False
         try:
             # Wait for the Clear button to be clickable
             clear_button = WebDriverWait(self.driver, 10).until(
@@ -975,12 +979,12 @@ class Bet9jaBot:
         amount_to_use = self.amount_to_use
         counting_fail_trials = random.randint(0, 2)
 
-        for i in range(counting_fail_trials):
-            if i == 0:
-                self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
-            else:
-                self.listOfAllOdds.append(1.85)
-                self.calculate_next_stakes(self.listOfAllOdds[-1], i)
+        # for i in range(counting_fail_trials):
+        #     if i == 0:
+        #         self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
+        #     else:
+        #         self.listOfAllOdds.append(1.85)
+        #         self.calculate_next_stakes(self.listOfAllOdds[-1], i)
 
         ######################################################################
         print(f"counting_fail_trials: {counting_fail_trials}   self: {self.listOfAllAmountPlaced}")
