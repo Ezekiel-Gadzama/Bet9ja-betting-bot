@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 380000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 328000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -535,7 +535,8 @@ class Bet9jaBot:
                                 total_score = home_score + away_score
                                 print("result completed")
                                 return "O" if total_score % 2 != 0 else "E"
-                            elif match_status == "Pst" or match_status == "-":
+                            elif (match_status == "Pst" or match_status == "-" or match_status == "" or match_status ==
+                                  "'"):
                                 print("Match was Postponed after betting")
                                 return "Pst"
 
@@ -1148,7 +1149,7 @@ print(f"Winning probability: {1 - estimated_risk}    Lost rate: {bet9ja_bot.num_
 # Create and run the bot
 listOfAllBetInstance = [
     Bet9jaBot(username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
-              potential_monthly_Profit, betType, "E" if i % 2 == 0 else "O")
+              potential_monthly_Profit, betType, "O")  # "E" if i % 2 == 0 else "O"
     for i in range(bet9ja_bot.num_bet_per_hour())  # bet9ja_bot.num_bet_per_hour()
 ]
 
