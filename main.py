@@ -979,7 +979,7 @@ class Bet9jaBot:
         ############################################################
         amount_to_use = self.amount_to_use
         counting_fail_trials = random.randint(0, 2)
-
+        counting_fail_trials = 0
         # for i in range(counting_fail_trials):
         #     if i == 0:
         #         self.listOfAllAmountPlaced.append(self.stake_distribution_starting_stake())
@@ -989,6 +989,7 @@ class Bet9jaBot:
 
         ######################################################################
         print(f"counting_fail_trials: {counting_fail_trials}   self: {self.listOfAllAmountPlaced}")
+
         total_failed_trials = 0
         listOfAllTotalFailedTrials = []
         original_number_of_trials = self.number_of_trials
