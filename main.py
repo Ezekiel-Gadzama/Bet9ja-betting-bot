@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 328000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 1050000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -154,7 +154,7 @@ def send_profit_email(passwordT):
         #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            days = 7
+            days = 10
             print(f"Going to sleep for {days} days")
             time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
@@ -530,15 +530,21 @@ class Bet9jaBot:
                             elif find:
                                 return "Found"
 
-                            if match_status in ["FT", "Pen", "ET"]:
-                                home_score, away_score = map(int, score.split(" : "))
-                                total_score = home_score + away_score
-                                print("result completed")
-                                return "O" if total_score % 2 != 0 else "E"
-                            elif (match_status == "Pst" or match_status == "-" or match_status == "" or match_status ==
-                                  "'"):
-                                print("Match was Postponed after betting")
+                            print(f"Match Status: {match_status}")
+                            if match_status in ["FT", "Pen", "ET", "AW", "AET"]:
+                                try:
+                                    home_score, away_score = map(int, score.split(" : "))
+                                    total_score = home_score + away_score
+                                    print("result completed")
+                                    return "O" if total_score % 2 != 0 else "E"
+                                except:
+                                    print("Match has no result after betting")
+                                    return "Pst"
+                            elif match_status == "Pst" or match_status == "Ssp":
+                                print("Match was Postponed/Suspended after betting")
                                 return "Pst"
+                            elif match_status == "-" or match_status == "" or match_status == "'":
+                                return "Repeat"
 
                             outer_break = True
                     except Exception as e:
@@ -574,6 +580,7 @@ class Bet9jaBot:
 
         with login_lock:
             self.login()
+            time.sleep(2)
             self.handle_upcoming_tab()
 
         self.match_starting_time = None
@@ -584,6 +591,9 @@ class Bet9jaBot:
         elif result == "Pst":
             self.match_PST = True
             return False
+        elif result == "Repeat":
+            print("Live score hasn't showed result, checking later")
+            self.has_won()
         elif result != "No result":
             print("Lost the match")
             self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
@@ -612,6 +622,7 @@ class Bet9jaBot:
                 self.login()
                 self.handle_popups()
                 self.handle_upcoming_tab()
+                time.sleep(3)
                 continue
 
             # Get current time in Lagos
@@ -655,13 +666,13 @@ class Bet9jaBot:
         plus = 0
         if len(match_elements) >= 4:  # you can use != 0 for a case of just 1 thread
             for index, match in enumerate(match_elements):
-                if index >= 3 + plus:  # Break the loop after the first two matches
+                if index >= 5 + plus:  # Break the loop after the first three matches
                     break
                 try:
                     timetime = match.text.split()[0]
                     self.match_starting_time = self.find_match_time = timetime  # Assuming the time is the first part of the match text
                 except Exception as e:
-                    break
+                    continue # break
                 lagos_tz = pytz.timezone('Africa/Lagos')
                 current_time = datetime.now(lagos_tz)
                 # Get the current date and time
@@ -861,12 +872,13 @@ class Bet9jaBot:
                     EC.element_to_be_clickable((By.XPATH, '//li[contains(text(), "Upcoming")]'))
                 )
                 upcoming_tab.click()
-
+                time.sleep(2)
                 if self.betType == "Goal":
                     odd_even_tab = WebDriverWait(self.driver, 10).until(
                         EC.element_to_be_clickable((By.XPATH, '//td[contains(text(), "Odd/Even")]'))
                     )
                     odd_even_tab.click()
+                time.sleep(1)
                 break
             except Exception as e:
                 print(f"An error occurred while handling the upcoming tab: {e}")
