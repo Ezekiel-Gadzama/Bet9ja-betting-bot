@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 1050000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 1000000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -154,7 +154,7 @@ def send_profit_email(passwordT):
         #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            days = 10
+            days = 7
             print(f"Going to sleep for {days} days")
             time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
@@ -329,7 +329,7 @@ class Bet9jaBot:
             new_stake = int(
                 (np.sum(all_stakes) + (self.starting_stake * (self.average_odd - 1) * count)) / (self.average_odd - 1))
             all_stakes.append(new_stake)
-        num = self.amount_to_use / np.sum(all_stakes)
+        num = (self.amount_to_use + (self.amount_to_use * 0.15)) / np.sum(all_stakes)
         for i in range(len(all_stakes)):
             all_stakes[i] = int(all_stakes[i] * num)
         return all_stakes[0]
@@ -536,6 +536,8 @@ class Bet9jaBot:
                                     home_score, away_score = map(int, score.split(" : "))
                                     total_score = home_score + away_score
                                     print("result completed")
+                                    if match_status == "AET":
+                                        return "E"
                                     return "O" if total_score % 2 != 0 else "E"
                                 except:
                                     print("Match has no result after betting")
@@ -593,6 +595,7 @@ class Bet9jaBot:
             return False
         elif result == "Repeat":
             print("Live score hasn't showed result, checking later")
+            time.sleep(7200)
             self.has_won()
         elif result != "No result":
             print("Lost the match")
@@ -602,6 +605,7 @@ class Bet9jaBot:
     def pick_a_match(self):
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
+        sample_size = 2
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
@@ -666,7 +670,7 @@ class Bet9jaBot:
         plus = 0
         if len(match_elements) >= 4:  # you can use != 0 for a case of just 1 thread
             for index, match in enumerate(match_elements):
-                if index >= 5 + plus:  # Break the loop after the first three matches
+                if index >= sample_size + plus:  # Break the loop after the first three matches
                     break
                 try:
                     timetime = match.text.split()[0]
