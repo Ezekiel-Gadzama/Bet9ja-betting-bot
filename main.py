@@ -23,7 +23,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 1000000  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 246500  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -561,7 +561,7 @@ class Bet9jaBot:
             print("200 seconds")
             time.sleep(200)
 
-    def has_won(self):
+    def has_won(self, counting):
         with won_lock:
             inter = 0
             while True:
@@ -595,8 +595,12 @@ class Bet9jaBot:
             return False
         elif result == "Repeat":
             print("Live score hasn't showed result, checking later")
+            counting += 1
+            if counting >= 3:
+                self.match_PST = True
+                return False
             time.sleep(7200)
-            self.has_won()
+            self.has_won(counting)
         elif result != "No result":
             print("Lost the match")
             self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
@@ -676,7 +680,7 @@ class Bet9jaBot:
                     timetime = match.text.split()[0]
                     self.match_starting_time = self.find_match_time = timetime  # Assuming the time is the first part of the match text
                 except Exception as e:
-                    continue # break
+                    continue  # break
                 lagos_tz = pytz.timezone('Africa/Lagos')
                 current_time = datetime.now(lagos_tz)
                 # Get the current date and time
@@ -882,7 +886,7 @@ class Bet9jaBot:
                         EC.element_to_be_clickable((By.XPATH, '//td[contains(text(), "Odd/Even")]'))
                     )
                     odd_even_tab.click()
-                time.sleep(1)
+                time.sleep(6)
                 break
             except Exception as e:
                 print(f"An error occurred while handling the upcoming tab: {e}")
@@ -935,7 +939,6 @@ class Bet9jaBot:
             )
 
             place_bet_button.click()
-            print(f"Bet of {next_stake} has been placed successfully")
 
             # Wait for the "Continue" button to be clickable
             continue_button = WebDriverWait(self.driver, 10).until(
@@ -944,6 +947,7 @@ class Bet9jaBot:
 
             # Click on the "Continue" button
             continue_button.click()
+            time.sleep(3)
             return True
         except Exception as e:
             self.click_cancel_buttons(0)
@@ -1038,7 +1042,7 @@ class Bet9jaBot:
 
             while trial < self.number_of_trials - 1:
                 with pick_a_match_lock:
-                    time.sleep(20)  # very important sleep to make the previous thread finish betting. don't change
+                    time.sleep(37)  # very important sleep to make the previous thread finish betting. don't change
                     self.checking_browsers_are_open()
                     print(f"Number of threads: {threading.active_count()}")
                     global current_amount
@@ -1049,6 +1053,7 @@ class Bet9jaBot:
                         self.pick_a_match()
                     except:
                         print("This thread didn't pick a match successfully")
+                        self.thread_trails -= 1
                         self.driver.get("https://sports.bet9ja.com/sport/soccer/1")
                         self.login()
                         self.handle_popups()
@@ -1066,7 +1071,32 @@ class Bet9jaBot:
                         next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1], trial)
                         print("trial is not zero")
 
-                    if not self.place_bet(next_stake):
+                    bet = self.place_bet(next_stake)
+                    try:
+                        # Wait until the pop-up is present
+                        WebDriverWait(driver, 3).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, ".betboom-animation_actions"))
+                        )
+
+                        # Wait until the "Continue" button is clickable within the pop-up
+                        continue_button = WebDriverWait(driver, 3).until(
+                            EC.element_to_be_clickable(
+                                (By.CSS_SELECTOR, ".betboom-animation_actions .betboom-animation_close"))
+                        )
+
+                        # Click the "Continue" button
+                        continue_button.click()
+
+                        print("Clicked on the Continue button.")
+                    except Exception as e:
+                        print(f"An error occurred: {e}")
+                        # Set a flag if an error occurred
+                        error_occurred = True
+                    else:
+                        # Reset the flag if no error occurred
+                        error_occurred = False
+
+                    if not bet and error_occurred:
                         try:
                             self.listOfAllAmountPlaced.pop()
                             self.listOfAllOdds.pop()
@@ -1074,6 +1104,9 @@ class Bet9jaBot:
                             print("Error popping")
                         print("It didn't bet so we popped from list of all amount")
                         continue
+                    else:
+                        print(f"Bet of {next_stake} has been placed successfully")
+
                     trial += 1
                     print(
                         f"Waiting till the match ends: match will end at {datetime.now() + self.sleep_duration + timedelta(seconds=6900)}")
@@ -1082,7 +1115,8 @@ class Bet9jaBot:
                 time.sleep(self.sleep_duration.total_seconds() + 6900)
                 print("done sleeping")
                 self.checking_browsers_are_open()
-                if self.has_won():
+                counting = 0
+                if self.has_won(counting):
                     # Get the number of threads
                     num_threads = threading.active_count()
                     print(f"Number of threads: {num_threads}")
