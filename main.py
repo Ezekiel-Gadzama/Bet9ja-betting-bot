@@ -17,13 +17,14 @@ import string
 import logging
 import sys
 import os
+import re
 
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 246500  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 254200  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -609,7 +610,7 @@ class Bet9jaBot:
     def pick_a_match(self):
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
-        sample_size = 2
+        sample_size = 1
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
@@ -672,7 +673,7 @@ class Bet9jaBot:
 
         my_match = []
         plus = 0
-        if len(match_elements) >= 4:  # you can use != 0 for a case of just 1 thread
+        if len(match_elements) >= 1:  # you can use != 0 for a case of just 1 thread
             for index, match in enumerate(match_elements):
                 if index >= sample_size + plus:  # Break the loop after the first three matches
                     break
@@ -720,7 +721,7 @@ class Bet9jaBot:
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
 
-            if len(my_match) < 3:
+            if len(my_match) < sample_size:
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
 
             if len(my_match) == 0:
@@ -767,9 +768,6 @@ class Bet9jaBot:
 
                         self.sleep_duration = timedelta(
                             seconds=(match_datetime - datetime.now(lagos_tz)).total_seconds())
-                        self.driver.back()
-                        self.handle_popups()
-                        self.handle_upcoming_tab()
                     except:
                         self.login()
                         self.driver.get("https://sports.bet9ja.com/sport/soccer/1")
@@ -919,35 +917,69 @@ class Bet9jaBot:
             print('Failed to place bet because account balance is lesser than stake')
             return False
         try:
-            # Wait for the Clear button to be clickable
-            clear_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "basket-preset-values__item"))
-            )
-            clear_button.click()
+            try:
+                # Wait for the Clear button to be clickable
+                clear_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.CLASS_NAME, "basket-preset-values__item"))
+                )
+                clear_button.click()
 
-            # Locate the input element for stake
-            stake_input = WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".input__holder .input"))
-            )
+                # Locate the input element for stake
+                stake_input = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".input__holder .input"))
+                )
 
-            # Input the desired stake amount
-            stake_input.send_keys(str(next_stake))
+                # Input the desired stake amount
+                stake_input.send_keys(str(next_stake))
 
-            # Click on the "Place Bet" button
-            place_bet_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.ID, "betslip_buttons_placebet"))
-            )
+                # Click on the "Place Bet" button
+                place_bet_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.ID, "betslip_buttons_placebet"))
+                )
 
-            place_bet_button.click()
+                place_bet_button.click()
 
-            # Wait for the "Continue" button to be clickable
-            continue_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable((By.CLASS_NAME, "btn-betslip-s"))
-            )
+                # Wait for the "Continue" button to be clickable
+                continue_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.CLASS_NAME, "btn-betslip-s"))
+                )
 
-            # Click on the "Continue" button
-            continue_button.click()
-            time.sleep(3)
+                # Click on the "Continue" button
+                continue_button.click()
+            except:
+                print("something went wrong, maybe betBOOM")
+            print("10 seconds sleep")
+            time.sleep(10)
+            while True:
+                self.driver.get('https://sports.bet9ja.com/myBets/')
+                try:
+                    # Wait for all accordion items to load
+                    accordion_items = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_all_elements_located((By.XPATH, '//div[@class="accordion-item mt10"]'))
+                    )
+                    break
+                except:
+                    continue
+
+            print("len: ", len(accordion_items))
+            # Extract the stake amount using regex
+            stake_element = accordion_items[0].find_element(By.XPATH, ".//div[contains(text(), 'Stake')]")
+            stake_text = stake_element.text.strip()
+            stake_amount = re.search(r'[\d,]+\.\d{2}', stake_text)
+            outcome_text = float(stake_amount.group().replace(',', ''))
+            print(f"Open Bet stake : {outcome_text}    next stake : {next_stake}")
+            # Get the team names
+            team_element = accordion_items[0].find_element(By.XPATH, './/div[@class="mybets-bet txt-cut"]')
+            team_name = team_element.text.strip()
+            # Split team_name into two parts
+            teams = team_name.split(" - ")
+            # Get the last match names tuple
+            print(f"Team: {team_name}   listName:  {self.listOfAllMatchName[-1]}")
+            # Properly compare team names
+            if teams != list(self.listOfAllMatchName[-1]) or float(outcome_text) != float(next_stake):
+                print("The bet was void")
+                return False
+
             return True
         except Exception as e:
             self.click_cancel_buttons(0)
@@ -1042,7 +1074,7 @@ class Bet9jaBot:
 
             while trial < self.number_of_trials - 1:
                 with pick_a_match_lock:
-                    time.sleep(37)  # very important sleep to make the previous thread finish betting. don't change
+                    time.sleep(50)  # very important sleep to make the previous thread finish betting. don't change
                     self.checking_browsers_are_open()
                     print(f"Number of threads: {threading.active_count()}")
                     global current_amount
@@ -1072,31 +1104,8 @@ class Bet9jaBot:
                         print("trial is not zero")
 
                     bet = self.place_bet(next_stake)
-                    try:
-                        # Wait until the pop-up is present
-                        WebDriverWait(driver, 3).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, ".betboom-animation_actions"))
-                        )
 
-                        # Wait until the "Continue" button is clickable within the pop-up
-                        continue_button = WebDriverWait(driver, 3).until(
-                            EC.element_to_be_clickable(
-                                (By.CSS_SELECTOR, ".betboom-animation_actions .betboom-animation_close"))
-                        )
-
-                        # Click the "Continue" button
-                        continue_button.click()
-
-                        print("Clicked on the Continue button.")
-                    except Exception as e:
-                        print(f"An error occurred: {e}")
-                        # Set a flag if an error occurred
-                        error_occurred = True
-                    else:
-                        # Reset the flag if no error occurred
-                        error_occurred = False
-
-                    if not bet and error_occurred:
+                    if not bet:
                         try:
                             self.listOfAllAmountPlaced.pop()
                             self.listOfAllOdds.pop()
@@ -1112,6 +1121,11 @@ class Bet9jaBot:
                         f"Waiting till the match ends: match will end at {datetime.now() + self.sleep_duration + timedelta(seconds=6900)}")
                     print(f"The sleeping duration before match starts is: {self.sleep_duration.total_seconds()}")
                     print(f"The sleeping duration is: {self.sleep_duration.total_seconds() + 6900}")
+                    self.driver.get("https://sports.bet9ja.com/sport/soccer/1")
+                    self.login()
+                    self.handle_popups()
+                    self.handle_upcoming_tab()
+
                 time.sleep(self.sleep_duration.total_seconds() + 6900)
                 print("done sleeping")
                 self.checking_browsers_are_open()
