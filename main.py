@@ -219,6 +219,7 @@ class Bet9jaBot:
         self.find_match_time = None
         self.thread_trails = 0
         self.match_PST = False
+        self.betTimes = 0
 
     def click_cancel_buttons(self, number_to_keep):
         value = False
@@ -610,7 +611,7 @@ class Bet9jaBot:
     def pick_a_match(self):
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
-        sample_size = 1
+        sample_size = 5
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
@@ -716,12 +717,16 @@ class Bet9jaBot:
                             plus += 1
                     else:
                         plus += 1
+                        if sleep_duration >= 6000:
+                            break
+
                 except Exception as e:
                     print(f"Exception {e}")
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
 
-            if len(my_match) < sample_size:
+            if len(my_match) < 3:
+                print("Sample size was less than 3, resetting list")
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
 
             if len(my_match) == 0:
@@ -917,37 +922,38 @@ class Bet9jaBot:
             print('Failed to place bet because account balance is lesser than stake')
             return False
         try:
-            try:
-                # Wait for the Clear button to be clickable
-                clear_button = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.CLASS_NAME, "basket-preset-values__item"))
-                )
-                clear_button.click()
+            if self.betTimes == 0:
+                try:
+                    # Wait for the Clear button to be clickable
+                    clear_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.CLASS_NAME, "basket-preset-values__item"))
+                    )
+                    clear_button.click()
 
-                # Locate the input element for stake
-                stake_input = WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, ".input__holder .input"))
-                )
+                    # Locate the input element for stake
+                    stake_input = WebDriverWait(self.driver, 10).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, ".input__holder .input"))
+                    )
 
-                # Input the desired stake amount
-                stake_input.send_keys(str(next_stake))
+                    # Input the desired stake amount
+                    stake_input.send_keys(str(next_stake))
 
-                # Click on the "Place Bet" button
-                place_bet_button = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.ID, "betslip_buttons_placebet"))
-                )
+                    # Click on the "Place Bet" button
+                    place_bet_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.ID, "betslip_buttons_placebet"))
+                    )
 
-                place_bet_button.click()
+                    place_bet_button.click()
 
-                # Wait for the "Continue" button to be clickable
-                continue_button = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable((By.CLASS_NAME, "btn-betslip-s"))
-                )
+                    # Wait for the "Continue" button to be clickable
+                    continue_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.CLASS_NAME, "btn-betslip-s"))
+                    )
 
-                # Click on the "Continue" button
-                continue_button.click()
-            except:
-                print("something went wrong, maybe betBOOM")
+                    # Click on the "Continue" button
+                    continue_button.click()
+                except:
+                    print("something went wrong, maybe betBOOM")
             print("10 seconds sleep")
             time.sleep(10)
             while True:
@@ -978,7 +984,15 @@ class Bet9jaBot:
             # Properly compare team names
             if teams != list(self.listOfAllMatchName[-1]) or float(outcome_text) != float(next_stake):
                 print("The bet was void")
-                return False
+                print("rechecking again")
+                time.sleep(5)
+                self.betTimes += 1
+                if self.betTimes >= 3:
+                    self.betTimes = 0
+                    print("The bet was void after rechecking again")
+                    return False
+                self.driver.refresh()
+                return self.place_bet(next_stake)
 
             return True
         except Exception as e:
