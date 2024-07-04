@@ -958,6 +958,7 @@ class Bet9jaBot:
                     print("something went wrong, maybe betBOOM")
             print("10 seconds sleep")
             time.sleep(10)
+            found = 0
             while True:
                 self.driver.get('https://sports.bet9ja.com/myBets/')
                 try:
@@ -967,6 +968,9 @@ class Bet9jaBot:
                     )
                     break
                 except:
+                    found += 1
+                    if found > 3:
+                        break
                     continue
 
             print("len: ", len(accordion_items))
