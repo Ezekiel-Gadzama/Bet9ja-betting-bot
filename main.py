@@ -24,7 +24,8 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 254200  # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439]
+amount_to_use = 230900
+# can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
 #  (all minimum amount)
@@ -334,7 +335,7 @@ class Bet9jaBot:
         num = (self.amount_to_use + (self.amount_to_use * 0.15)) / np.sum(all_stakes)
         for i in range(len(all_stakes)):
             all_stakes[i] = int(all_stakes[i] * num)
-        return all_stakes[0]
+        return all_stakes[0] + random.randint(0, 30)
 
     def fill_input_field(self, locator, element_id, value):
         element = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((locator, element_id)))
@@ -611,7 +612,7 @@ class Bet9jaBot:
     def pick_a_match(self):
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
-        sample_size = 5
+        sample_size = 3
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
@@ -674,7 +675,7 @@ class Bet9jaBot:
 
         my_match = []
         plus = 0
-        if len(match_elements) >= 1:  # you can use != 0 for a case of just 1 thread
+        if len(match_elements) >= sample_size:  # you can use != 0 for a case of just 1 thread
             for index, match in enumerate(match_elements):
                 if index >= sample_size + plus:  # Break the loop after the first three matches
                     break
@@ -725,7 +726,7 @@ class Bet9jaBot:
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
 
-            if len(my_match) < 3:
+            if len(my_match) < sample_size:
                 print("Sample size was less than 3, resetting list")
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
 
@@ -807,7 +808,8 @@ class Bet9jaBot:
             else:
                 globalCount = 0
                 shareDistribution = None
-
+        next_stake += random.randint(0, 30)  # this is to prevent exactly
+        # the same amount for each bet, so that it can correctly check if the bet was placed successfully
         self.listOfAllAmountPlaced.append(next_stake)
         return next_stake
 
@@ -1148,6 +1150,7 @@ class Bet9jaBot:
                     # Get the number of threads
                     num_threads = threading.active_count()
                     print(f"Number of threads: {num_threads}")
+                    print(f"number of Failed trials before winning is: {total_failed_trials}")
                     listOfAllTotalFailedTrials.append(total_failed_trials)
                     counting_fail_trials = 0
                     total_failed_trials = 0
@@ -1173,10 +1176,7 @@ class Bet9jaBot:
                         return
                     break
                 else:
-                    print("done losing")
-                    counting_fail_trials += 1
-                    total_failed_trials += 1
-                    print(f"number of Failed trials is: {total_failed_trials}")
+
                     if self.match_PST:
                         print("done losing but it did not lose, it was postponed")
                         self.match_PST = False
@@ -1186,6 +1186,13 @@ class Bet9jaBot:
                         self.listOfAllAmountPlaced.pop()
                         self.listOfAllMatchName.pop()
                         trial -= 1
+
+                    print("done losing")
+                    counting_fail_trials += 1
+                    total_failed_trials += 1
+                    print(f"number of Failed trials is: {total_failed_trials}")
+                    num_threads = threading.active_count()
+                    print(f"Number of threads: {num_threads}")
 
                     if trial >= self.number_of_trials - 1:
                         shareDistribution = int(sum(self.listOfAllAmountPlaced) / globalDividedNumber)
