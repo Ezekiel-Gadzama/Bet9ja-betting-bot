@@ -22,9 +22,9 @@ import re
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 9  # advice to use a minimum of 5
-potential_monthly_Profit = 60
-amount_to_use = 230900
+number_of_trials = 8  # advice to use a minimum of 5
+potential_monthly_Profit = 4200
+amount_to_use = 80000
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
@@ -190,7 +190,7 @@ place_bet_lock = threading.Lock()
 live_score_lock = threading.Lock()
 shareDistribution = None
 globalCount = 0
-globalDividedNumber = 290
+globalDividedNumber = 3
 
 
 class Bet9jaBot:
@@ -789,7 +789,7 @@ class Bet9jaBot:
                     self.pick_a_match()
 
         else:
-            print("pick a match error 2 sleeping for 120 seconds")
+            print("pick a match error 5 lol sleeping for 120 seconds")
             time.sleep(120)
             self.login()
             self.handle_popups()
@@ -801,14 +801,15 @@ class Bet9jaBot:
         next_stake = int(
             (np.sum(self.listOfAllAmountPlaced) + (
                     self.starting_stake * (odd - 1) * (len(self.listOfAllAmountPlaced) + 1))) / (odd - 1))
-        if shareDistribution is not None and trial >= 3:
+        if shareDistribution is not None and trial >= 2:  # and trial >= 3:
             if globalCount < globalDividedNumber:
                 globalCount += 1
                 next_stake = int(next_stake + shareDistribution)
             else:
                 globalCount = 0
+                globalDividedNumber = 0
                 shareDistribution = None
-        next_stake += random.randint(0, 30)  # this is to prevent exactly
+        next_stake += random.randint(0, 10)  # this is to prevent exactly
         # the same amount for each bet, so that it can correctly check if the bet was placed successfully
         self.listOfAllAmountPlaced.append(next_stake)
         return next_stake
@@ -969,6 +970,7 @@ class Bet9jaBot:
                     break
                 except:
                     found += 1
+                    time.sleep(3)
                     if found > 3:
                         break
                     continue
@@ -1046,7 +1048,7 @@ class Bet9jaBot:
         self.live_score_driver = live_score_driver
 
     def bet_num_games_with_trials(self):
-        global shareDistribution, globalDividedNumber, sum_of_all_profit_made
+        global shareDistribution, globalDividedNumber, sum_of_all_profit_made, globalCount
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         amount_to_use = self.amount_to_use
@@ -1198,10 +1200,14 @@ class Bet9jaBot:
                     num_threads = threading.active_count()
                     print(f"Number of threads: {num_threads}")
 
-                    if trial >= self.number_of_trials - 1:
-                        shareDistribution = int(sum(self.listOfAllAmountPlaced) / globalDividedNumber)
+                    if trial >= 3:  # self.number_of_trials - 1:
+                        update = 0
+                        if shareDistribution is not None:
+                            update = (globalDividedNumber - globalCount) * shareDistribution
                         globalDividedNumber += globalDividedNumber
+                        shareDistribution = int((sum(self.listOfAllAmountPlaced) + update) / globalDividedNumber)
                         self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
+                        print(f"Failed after trial is {trial} and shareDistribution = {shareDistribution}")
                         print("Trying to cover lost through Plan B")
                         print("start again, No fucking profit")
                         break
