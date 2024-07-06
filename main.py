@@ -807,7 +807,7 @@ class Bet9jaBot:
                 next_stake = int(next_stake + shareDistribution)
             else:
                 globalCount = 0
-                globalDividedNumber = 0
+                globalDividedNumber = 3
                 shareDistribution = None
         next_stake += random.randint(0, 10)  # this is to prevent exactly
         # the same amount for each bet, so that it can correctly check if the bet was placed successfully
