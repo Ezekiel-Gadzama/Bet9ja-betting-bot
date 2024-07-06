@@ -1202,10 +1202,13 @@ class Bet9jaBot:
 
                     if trial >= 3:  # self.number_of_trials - 1:
                         update = 0
+                        divideValue = globalDividedNumber
                         if shareDistribution is not None:
                             update = (globalDividedNumber - globalCount) * shareDistribution
-                        globalDividedNumber += globalDividedNumber
-                        shareDistribution = int((sum(self.listOfAllAmountPlaced) + update) / globalDividedNumber)
+                            divideValue = (globalDividedNumber - globalCount) + 3
+                            globalDividedNumber += divideValue
+
+                        shareDistribution = int((sum(self.listOfAllAmountPlaced) + update) / divideValue)
                         self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
                         print(f"Failed after trial is {trial} and shareDistribution = {shareDistribution}")
                         print("Trying to cover lost through Plan B")
