@@ -191,6 +191,7 @@ live_score_lock = threading.Lock()
 retryFirstList = []
 retrySecondList = []
 retryThirdList = []
+backUp = None
 
 
 class Bet9jaBot:
@@ -797,39 +798,47 @@ class Bet9jaBot:
             self.pick_a_match()
 
     def calculate_next_stakes(self, odd, trial):
-        global retryFirstList, retrySecondList, retryThirdList
+        global retryFirstList, retrySecondList, retryThirdList, backUp
         next_stake = int(
             (np.sum(self.listOfAllAmountPlaced) + (
                     self.starting_stake * (odd - 1) * (len(self.listOfAllAmountPlaced) + 1))) / (odd - 1))
         if len(retryFirstList) > 0 and trial == 0:
             print(f"retryFirstList and trail: {trial} added: stake: {next_stake} + {retryFirstList[0]}")
+            backUp = retryFirstList[0]
             next_stake += retryFirstList.pop(0)
         elif len(retrySecondList) > 0 and trial == 1:
             print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {retrySecondList[0]}")
+            backUp = retrySecondList[0]
             next_stake += retrySecondList.pop(0)
         elif len(retryThirdList) > 0 and trial == 2:
             print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {retryThirdList[0]}")
+            backUp = retryThirdList[0]
             next_stake += retryThirdList.pop(0)
         elif len(retryThirdList) > 0 and trial == 0:
             print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {(retryThirdList[0] / 10)}")
             retryThirdList.append(int(retryThirdList[0] - (retryThirdList[0] / 10)))
             next_stake += (retryThirdList[0] / 10)
+            backUp = (retryThirdList[0] / 10)
             retryThirdList.pop(0)
         elif len(retryThirdList) > 0 and trial == 1:
             print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {(retryThirdList[0] / 3)}")
             retryThirdList.append(int(retryThirdList[0] - (retryThirdList[0] / 3)))
             next_stake += (retryThirdList[0] / 3)
+            backUp = (retryThirdList[0] / 3)
             retryThirdList.pop(0)
         elif len(retrySecondList) > 0 and trial == 0:
             print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {(retrySecondList[0] / 4)}")
             retrySecondList.append(int(retrySecondList[0] - (retrySecondList[0] / 4)))
             next_stake += (retrySecondList[0] / 4)
+            backUp = (retrySecondList[0] / 4)
             retrySecondList.pop(0)
         elif len(retrySecondList) > 0 and trial == 2:
             print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {retrySecondList[0]}")
+            backUp = retrySecondList[0]
             next_stake += retrySecondList.pop(0)
         elif len(retryFirstList) > 0 and trial != 0:
             print(f"retryFirstList and trail: {trial} added: stake: {next_stake} + {retryFirstList[0]}")
+            backUp = retryFirstList[0]
             next_stake += retryFirstList.pop(0)
 
         next_stake += random.randint(0, 10)  # this is to prevent exactly
@@ -1071,7 +1080,7 @@ class Bet9jaBot:
         self.live_score_driver = live_score_driver
 
     def bet_num_games_with_trials(self):
-        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList
+        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         amount_to_use = self.amount_to_use
@@ -1157,9 +1166,43 @@ class Bet9jaBot:
                         except:
                             print("Error popping")
                         print("It didn't bet so we popped from list of all amount")
+                        if len(retryFirstList) > 0 and trial == 0 and backUp is not None:
+                            print(f"returning retryFirstList and trail: {trial} appended {backUp}")
+                            retryFirstList.append(backUp)
+                        elif len(retrySecondList) > 0 and trial == 1 and backUp is not None:
+                            print(
+                                f"returning retrySecondList and trail: {trial} appended {backUp}")
+                            retrySecondList.append(backUp)
+                        elif len(retryThirdList) > 0 and trial == 2 and backUp is not None:
+                            print(f"returning retryThirdList and trail: {trial} appended {backUp}")
+                            retryThirdList.append(backUp)
+                        elif len(retryThirdList) > 0 and trial == 0 and backUp is not None:
+                            print(
+                                f"returning retryThirdList and trail: {trial} appended {backUp}")
+                            retryThirdList.append(backUp)
+                        elif len(retryThirdList) > 0 and trial == 1 and backUp is not None:
+                            print(
+                                f"retryThirdList and trail: {trial} appended {backUp}")
+                            retryThirdList.append(backUp)
+                        elif len(retrySecondList) > 0 and trial == 0 and backUp is not None:
+                            print(
+                                f"retrySecondList and trail: {trial} appended {backUp}")
+                            retrySecondList.append(backUp)
+                        elif len(retrySecondList) > 0 and trial == 2 and backUp is not None:
+                            print(
+                                f"retrySecondList and trail: {trial} appended {backUp}")
+                            retrySecondList.append(backUp)
+                        elif len(retryFirstList) > 0 and trial != 0 and backUp is not None:
+                            print(f"retryFirstList and trail: {trial} appended {backUp}")
+                            retryFirstList.append(backUp)
+                        elif backUp is not None:
+                            print(f"because Last: returning thirdTrial and trail: {trial} appended {backUp}")
+                            retryThirdList.append(backUp)
+
                         continue
                     else:
                         print(f"Bet of {next_stake} has been placed successfully")
+                        backUp = None
 
                     trial += 1
                     print(
