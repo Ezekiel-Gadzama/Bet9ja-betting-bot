@@ -24,7 +24,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 8  # advice to use a minimum of 5
 potential_monthly_Profit = 4200
-amount_to_use = 80000
+amount_to_use = 206000
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 100  # can not be less than 100
@@ -188,9 +188,9 @@ won_lock = threading.Lock()
 login_lock = threading.Lock()
 place_bet_lock = threading.Lock()
 live_score_lock = threading.Lock()
-shareDistribution = None
-globalCount = 0
-globalDividedNumber = 3
+retryFirstList = []
+retrySecondList = []
+retryThirdList = []
 
 
 class Bet9jaBot:
@@ -334,8 +334,8 @@ class Bet9jaBot:
             all_stakes.append(new_stake)
         num = (self.amount_to_use + (self.amount_to_use * 0.15)) / np.sum(all_stakes)
         for i in range(len(all_stakes)):
-            all_stakes[i] = int(all_stakes[i] * num)
-        return all_stakes[0] + random.randint(0, 30)
+            all_stakes[i] = int(all_stakes[i] * num) + random.randint(0, 10)
+        return all_stakes
 
     def fill_input_field(self, locator, element_id, value):
         element = WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((locator, element_id)))
@@ -419,7 +419,7 @@ class Bet9jaBot:
             con += 1
             # Quit the current driver
             global live_score_driver
-            if tried >= 6:
+            if tried >= 4:
                 print(f"It couldn't find result after several trials of {given_home_team} vs {given_away_team}")
                 return random.choice(["O", "E"])
             if con % 3 == 0:
@@ -431,7 +431,7 @@ class Bet9jaBot:
                 self.live_score_driver = live_score_driver
                 self.live_score_driver.refresh()
             time.sleep(4)
-            if con % 5 == 0:
+            if con % 7 == 0:
                 try:
                     # Wait until the dateBox element is present
                     date_box = WebDriverWait(live_score_driver, 10).until(
@@ -517,7 +517,7 @@ class Bet9jaBot:
                                 f"{home_team_list} compare {given_home_team_list}   and  {away_team_list} compare {given_away_team_list} : {start_time} = ={self.find_match_time} == {self.match_starting_time}")
 
                         timeIs = False
-                        if start_time == self.find_match_time or start_time == self.match_starting_time or tried >= 4:
+                        if start_time == self.find_match_time or start_time == self.match_starting_time or tried >= 2:
                             timeIs = True
 
                         if ((set(home_team_list).intersection(given_home_team_list) and
@@ -561,8 +561,8 @@ class Bet9jaBot:
             if find:
                 print("Not Found")
                 return "Not Found"
-            print("200 seconds")
-            time.sleep(200)
+            print("150 seconds")
+            time.sleep(150)
 
     def has_won(self, counting):
         with won_lock:
@@ -597,9 +597,9 @@ class Bet9jaBot:
             self.match_PST = True
             return False
         elif result == "Repeat":
-            print("Live score hasn't showed result, checking later")
+            print(f"Live score hasn't showed result, checking later. counting is: {counting}")
             counting += 1
-            if counting >= 3:
+            if counting >= 2:
                 self.match_PST = True
                 return False
             time.sleep(7200)
@@ -797,18 +797,41 @@ class Bet9jaBot:
             self.pick_a_match()
 
     def calculate_next_stakes(self, odd, trial):
-        global shareDistribution, globalCount, globalDividedNumber
+        global retryFirstList, retrySecondList, retryThirdList
         next_stake = int(
             (np.sum(self.listOfAllAmountPlaced) + (
                     self.starting_stake * (odd - 1) * (len(self.listOfAllAmountPlaced) + 1))) / (odd - 1))
-        if shareDistribution is not None and trial >= 2:  # and trial >= 3:
-            if globalCount < globalDividedNumber:
-                globalCount += 1
-                next_stake = int(next_stake + shareDistribution)
-            else:
-                globalCount = 0
-                globalDividedNumber = 3
-                shareDistribution = None
+        if len(retryFirstList) > 0 and trial == 0:
+            print(f"retryFirstList and trail: {trial} added: stake: {next_stake} + {retryFirstList[0]}")
+            next_stake += retryFirstList.pop(0)
+        elif len(retrySecondList) > 0 and trial == 1:
+            print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {retrySecondList[0]}")
+            next_stake += retrySecondList.pop(0)
+        elif len(retryThirdList) > 0 and trial == 2:
+            print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {retryThirdList[0]}")
+            next_stake += retryThirdList.pop(0)
+        elif len(retryThirdList) > 0 and trial == 0:
+            print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {(retryThirdList[0] / 10)}")
+            retryThirdList.append(int(retryThirdList[0] - (retryThirdList[0] / 10)))
+            next_stake += (retryThirdList[0] / 10)
+            retryThirdList.pop(0)
+        elif len(retryThirdList) > 0 and trial == 1:
+            print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {(retryThirdList[0] / 3)}")
+            retryThirdList.append(int(retryThirdList[0] - (retryThirdList[0] / 3)))
+            next_stake += (retryThirdList[0] / 3)
+            retryThirdList.pop(0)
+        elif len(retrySecondList) > 0 and trial == 0:
+            print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {(retrySecondList[0] / 4)}")
+            retrySecondList.append(int(retrySecondList[0] - (retrySecondList[0] / 4)))
+            next_stake += (retrySecondList[0] / 4)
+            retrySecondList.pop(0)
+        elif len(retrySecondList) > 0 and trial == 2:
+            print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {retrySecondList[0]}")
+            next_stake += retrySecondList.pop(0)
+        elif len(retryFirstList) > 0 and trial != 0:
+            print(f"retryFirstList and trail: {trial} added: stake: {next_stake} + {retryFirstList[0]}")
+            next_stake += retryFirstList.pop(0)
+
         next_stake += random.randint(0, 10)  # this is to prevent exactly
         # the same amount for each bet, so that it can correctly check if the bet was placed successfully
         self.listOfAllAmountPlaced.append(next_stake)
@@ -915,7 +938,7 @@ class Bet9jaBot:
         min_amount_needed = self.total_account_balance_needed()
         if self.amount_to_use < min_amount_needed:
             self.amount_to_use = min_amount_needed
-        estimated_return = (1 + ((self.stake_distribution_starting_stake() * (
+        estimated_return = (1 + ((self.stake_distribution_starting_stake()[0] * (
                 self.average_odd - 1) * number_of_trials_per_day * self.num_bet_per_hour()) / self.amount_to_use)) ** 30 * self.amount_to_use
         return estimated_return, estimated_risk
 
@@ -1048,7 +1071,7 @@ class Bet9jaBot:
         self.live_score_driver = live_score_driver
 
     def bet_num_games_with_trials(self):
-        global shareDistribution, globalDividedNumber, sum_of_all_profit_made, globalCount
+        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         amount_to_use = self.amount_to_use
@@ -1070,7 +1093,7 @@ class Bet9jaBot:
 
         while True:
             self.checking_browsers_are_open()
-            self.starting_stake = self.stake_distribution_starting_stake()
+            self.starting_stake = self.stake_distribution_starting_stake()[0]
 
             if counting_fail_trials == self.number_of_trials - 1:
                 print("Trying to cover lost through Plan A")
@@ -1081,7 +1104,7 @@ class Bet9jaBot:
                     break
 
                 self.amount_to_use = self.amount_to_use - np.sum(self.listOfAllAmountPlaced)
-                self.starting_stake = self.stake_distribution_starting_stake()
+                self.starting_stake = self.stake_distribution_starting_stake()[0]
                 print(f"The total failed trial is: {total_failed_trials}")
                 counting_fail_trials = 0
                 self.listOfAllOdds = []
@@ -1168,7 +1191,8 @@ class Bet9jaBot:
                     print(f"Total Profit Made: {sum_of_all_profit_made}")
                     self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
                     self.number_of_trials += 1  # some important reason for this
-                    if self.stake_distribution_starting_stake() >= 100 and self.number_of_trials - 1 < original_number_of_trials:
+                    if self.stake_distribution_starting_stake()[
+                        0] >= 100 and self.number_of_trials - 1 < original_number_of_trials:
                         self.number_of_trials += 1
                     self.number_of_trials -= 1  # and this sets it back
                     self.listOfAllOdds = []
@@ -1201,18 +1225,33 @@ class Bet9jaBot:
                     print(f"Number of threads: {num_threads}")
 
                     if trial >= 3:  # self.number_of_trials - 1:
-                        update = 0
-                        divideValue = globalDividedNumber
-                        if shareDistribution is not None:
-                            update = (globalDividedNumber - globalCount) * shareDistribution
-                            divideValue = (globalDividedNumber - globalCount) + 3
-                            globalDividedNumber += divideValue
-
-                        shareDistribution = int((sum(self.listOfAllAmountPlaced) + update) / divideValue)
+                        valueOfTrial = self.number_of_trials
+                        self.number_of_trials = trial
+                        odd = 1.85
+                        self.amount_to_use = int((np.sum(self.listOfAllAmountPlaced) +
+                                                  (self.starting_stake * (odd - 1)
+                                                   * (len(self.listOfAllAmountPlaced) + 1))) / (odd - 1))
+                        distribution = self.stake_distribution_starting_stake()
+                        self.number_of_trials = valueOfTrial
+                        self.number_of_trials += 1  # some important reason for this
+                        if self.stake_distribution_starting_stake()[
+                            0] >= 100 and self.number_of_trials - 1 < original_number_of_trials:
+                            self.number_of_trials += 1
+                        self.number_of_trials -= 1  # and this sets it back
+                        retryFirstList.append(distribution[0])
+                        retrySecondList.append(distribution[1])
+                        retryThirdList.append(distribution[2])
                         self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
-                        print(f"Failed after trial is {trial} and shareDistribution = {shareDistribution}")
                         print("Trying to cover lost through Plan B")
                         print("start again, No fucking profit")
+                        self.listOfAllOdds = []
+                        self.listOfAllAmountPlaced = []
+                        self.listOfAllMatch = []
+                        self.listOfAllLostMatch = []
+                        self.listOfAllMatchName = []
+                        self.ListOfAllWinMatch = []
+                        counting_fail_trials = 0
+                        total_failed_trials = 0
                         break
 
             print(f"List of all failed trials before win: {listOfAllTotalFailedTrials}")
