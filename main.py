@@ -803,48 +803,48 @@ class Bet9jaBot:
             (np.sum(self.listOfAllAmountPlaced) + (
                     self.starting_stake * (odd - 1) * (len(self.listOfAllAmountPlaced) + 1))) / (odd - 1))
         if len(retryFirstList) > 0 and trial == 0:
-            print(f"retryFirstList and trail: {trial} added: stake: {next_stake} + {retryFirstList[0]}")
-            backUp = retryFirstList[0]
-            next_stake += retryFirstList.pop(0)
+            print(f"retryFirstList and trial: {trial} added: stake: {next_stake} + {int(retryFirstList[0])}")
+            backUp = int(retryFirstList[0])
+            next_stake += int(retryFirstList.pop(0))
         elif len(retrySecondList) > 0 and trial == 1:
-            print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {retrySecondList[0]}")
-            backUp = retrySecondList[0]
-            next_stake += retrySecondList.pop(0)
+            print(f"retrySecondList and trial: {trial} added: stake: {next_stake} + {int(retrySecondList[0])}")
+            backUp = int(retrySecondList[0])
+            next_stake += int(retrySecondList.pop(0))
         elif len(retryThirdList) > 0 and trial == 2:
-            print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {retryThirdList[0]}")
-            backUp = retryThirdList[0]
-            next_stake += retryThirdList.pop(0)
+            print(f"retryThirdList and trial: {trial} added: stake: {next_stake} + {int(retryThirdList[0])}")
+            backUp = int(retryThirdList[0])
+            next_stake += int(retryThirdList.pop(0))
         elif len(retryThirdList) > 0 and trial == 0:
-            print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {(retryThirdList[0] / 10)}")
+            print(f"retryThirdList and trial: {trial} added: stake: {next_stake} + {int((retryThirdList[0] / 10))}")
             retryThirdList.append(int(retryThirdList[0] - (retryThirdList[0] / 10)))
-            next_stake += (retryThirdList[0] / 10)
-            backUp = (retryThirdList[0] / 10)
+            next_stake += int((retryThirdList[0] / 10))
+            backUp = int((retryThirdList[0] / 10))
             retryThirdList.pop(0)
         elif len(retryThirdList) > 0 and trial == 1:
-            print(f"retryThirdList and trail: {trial} added: stake: {next_stake} + {(retryThirdList[0] / 3)}")
+            print(f"retryThirdList and trial: {trial} added: stake: {next_stake} + {int((retryThirdList[0] / 3))}")
             retryThirdList.append(int(retryThirdList[0] - (retryThirdList[0] / 3)))
-            next_stake += (retryThirdList[0] / 3)
-            backUp = (retryThirdList[0] / 3)
+            next_stake += int((retryThirdList[0] / 3))
+            backUp = int((retryThirdList[0] / 3))
             retryThirdList.pop(0)
         elif len(retrySecondList) > 0 and trial == 0:
-            print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {(retrySecondList[0] / 4)}")
+            print(f"retrySecondList and trial: {trial} added: stake: {next_stake} + {int((retrySecondList[0] / 4))}")
             retrySecondList.append(int(retrySecondList[0] - (retrySecondList[0] / 4)))
-            next_stake += (retrySecondList[0] / 4)
-            backUp = (retrySecondList[0] / 4)
+            next_stake += int((retrySecondList[0] / 4))
+            backUp = int((retrySecondList[0] / 4))
             retrySecondList.pop(0)
         elif len(retrySecondList) > 0 and trial == 2:
-            print(f"retrySecondList and trail: {trial} added: stake: {next_stake} + {retrySecondList[0]}")
-            backUp = retrySecondList[0]
-            next_stake += retrySecondList.pop(0)
+            print(f"retrySecondList and trial: {trial} added: stake: {next_stake} + {int(retrySecondList[0])}")
+            backUp = int(retrySecondList[0])
+            next_stake += int(retrySecondList.pop(0))
         elif len(retryFirstList) > 0 and trial != 0:
-            print(f"retryFirstList and trail: {trial} added: stake: {next_stake} + {retryFirstList[0]}")
-            backUp = retryFirstList[0]
-            next_stake += retryFirstList.pop(0)
+            print(f"retryFirstList and trial: {trial} added: stake: {next_stake} + {int(retryFirstList[0])}")
+            backUp = int(retryFirstList[0])
+            next_stake += int(retryFirstList.pop(0))
 
         next_stake += random.randint(0, 10)  # this is to prevent exactly
         # the same amount for each bet, so that it can correctly check if the bet was placed successfully
-        self.listOfAllAmountPlaced.append(next_stake)
-        return next_stake
+        self.listOfAllAmountPlaced.append(int(next_stake))
+        return int(next_stake)
 
     def handle_popups(self):
         try:
@@ -1154,7 +1154,7 @@ class Bet9jaBot:
                         next_stake = self.starting_stake
                         self.listOfAllAmountPlaced.append(self.starting_stake)
                     elif trial != 0:
-                        next_stake = self.calculate_next_stakes(self.listOfAllOdds[-1], trial)
+                        next_stake = int(self.calculate_next_stakes(self.listOfAllOdds[-1], trial))
                         print("trial is not zero")
 
                     bet = self.place_bet(next_stake)
@@ -1167,36 +1167,36 @@ class Bet9jaBot:
                             print("Error popping")
                         print("It didn't bet so we popped from list of all amount")
                         if len(retryFirstList) > 0 and trial == 0 and backUp is not None:
-                            print(f"returning retryFirstList and trail: {trial} appended {backUp}")
+                            print(f"returning retryFirstList and trial: {trial} appended {backUp}")
                             retryFirstList.append(backUp)
                         elif len(retrySecondList) > 0 and trial == 1 and backUp is not None:
                             print(
-                                f"returning retrySecondList and trail: {trial} appended {backUp}")
+                                f"returning retrySecondList and trial: {trial} appended {backUp}")
                             retrySecondList.append(backUp)
                         elif len(retryThirdList) > 0 and trial == 2 and backUp is not None:
-                            print(f"returning retryThirdList and trail: {trial} appended {backUp}")
+                            print(f"returning retryThirdList and trial: {trial} appended {backUp}")
                             retryThirdList.append(backUp)
                         elif len(retryThirdList) > 0 and trial == 0 and backUp is not None:
                             print(
-                                f"returning retryThirdList and trail: {trial} appended {backUp}")
+                                f"returning retryThirdList and trial: {trial} appended {backUp}")
                             retryThirdList.append(backUp)
                         elif len(retryThirdList) > 0 and trial == 1 and backUp is not None:
                             print(
-                                f"retryThirdList and trail: {trial} appended {backUp}")
+                                f"retryThirdList and trial: {trial} appended {backUp}")
                             retryThirdList.append(backUp)
                         elif len(retrySecondList) > 0 and trial == 0 and backUp is not None:
                             print(
-                                f"retrySecondList and trail: {trial} appended {backUp}")
+                                f"retrySecondList and trial: {trial} appended {backUp}")
                             retrySecondList.append(backUp)
                         elif len(retrySecondList) > 0 and trial == 2 and backUp is not None:
                             print(
-                                f"retrySecondList and trail: {trial} appended {backUp}")
+                                f"retrySecondList and trial: {trial} appended {backUp}")
                             retrySecondList.append(backUp)
                         elif len(retryFirstList) > 0 and trial != 0 and backUp is not None:
-                            print(f"retryFirstList and trail: {trial} appended {backUp}")
+                            print(f"retryFirstList and trial: {trial} appended {backUp}")
                             retryFirstList.append(backUp)
                         elif backUp is not None:
-                            print(f"because Last: returning thirdTrial and trail: {trial} appended {backUp}")
+                            print(f"because Last: returning thirdTrial and trial: {trial} appended {backUp}")
                             retryThirdList.append(backUp)
 
                         continue
@@ -1281,9 +1281,9 @@ class Bet9jaBot:
                             0] >= 100 and self.number_of_trials - 1 < original_number_of_trials:
                             self.number_of_trials += 1
                         self.number_of_trials -= 1  # and this sets it back
-                        retryFirstList.append(distribution[0])
-                        retrySecondList.append(distribution[1])
-                        retryThirdList.append(distribution[2])
+                        retryFirstList.append(int(distribution[0]))
+                        retrySecondList.append(int(distribution[1]))
+                        retryThirdList.append(int(distribution[2]))
                         self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
                         print("Trying to cover lost through Plan B")
                         print("start again, No fucking profit")
