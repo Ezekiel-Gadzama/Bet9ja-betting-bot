@@ -24,10 +24,10 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 8  # advice to use a minimum of 5
 potential_monthly_Profit = 4200
-amount_to_use = 260000
+amount_to_use = 15954
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
-starting_stake = 100  # can not be less than 100
+starting_stake = 10  # can not be less than 100
 #  (all minimum amount)
 average_odd = 1.85
 Default_account_balance = 0
@@ -156,9 +156,9 @@ def send_profit_email(passwordT):
         #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            days = 7
-            print(f"Going to sleep for {days} days")
-            time.sleep(60 * 60 * 24 * days)
+            # days = 7
+            # print(f"Going to sleep for {days} days")
+            # time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
             print("Ready to stop, terminating thread one by one")
 
@@ -1267,7 +1267,7 @@ class Bet9jaBot:
                     num_threads = threading.active_count()
                     print(f"Number of threads: {num_threads}")
 
-                    if trial >= 3:  # self.number_of_trials - 1:
+                    if trial >= 9:  # self.number_of_trials - 1:
                         valueOfTrial = self.number_of_trials
                         self.number_of_trials = trial
                         odd = 1.85
@@ -1334,17 +1334,26 @@ listOfAllBetInstance = [
     for i in range(bet9ja_bot.num_bet_per_hour())  # bet9ja_bot.num_bet_per_hour()
 ]
 
-# Create threads for all instances except the first one
-threads = [threading.Thread(target=bot_instance.bet_num_games_with_trials, args=()) for bot_instance in
-           listOfAllBetInstance]
 
-# Start threads for all instances except the first one
-for thread in threads:
-    thread.start()
+def run_threads_and_main():
+    # Create threads for all instances except the first one
+    threads = [threading.Thread(target=bot_instance.bet_num_games_with_trials, args=()) for bot_instance in
+               listOfAllBetInstance]
 
-bet9ja_bot.run()
-print(f"Number of threads: {threading.active_count()}")
+    # Start threads for all instances except the first one
+    for thread in threads:
+        thread.start()
 
-# Wait for all threads to complete
-for thread in threads:
-    thread.join()
+    bet9ja_bot.run()
+    print(f"Number of threads: {threading.active_count()}")
+
+    # Wait for all threads to complete
+    for thread in threads:
+        thread.join()
+
+    # Rerun the function after all threads have ended
+    run_threads_and_main()
+
+
+# Initial call to the function
+run_threads_and_main()
