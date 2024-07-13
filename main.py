@@ -156,9 +156,9 @@ def send_profit_email(passwordT):
         #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            # days = 7
-            # print(f"Going to sleep for {days} days")
-            # time.sleep(60 * 60 * 24 * days)
+            days = 7
+            print(f"Going to sleep for {days} days")
+            time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
             print("Ready to stop, terminating thread one by one")
 
@@ -222,6 +222,7 @@ class Bet9jaBot:
         self.thread_trails = 0
         self.match_PST = False
         self.betTimes = 0
+        self.num_of_wins_before_terminate = 1
 
     def click_cancel_buttons(self, number_to_keep):
         value = False
@@ -1136,6 +1137,7 @@ class Bet9jaBot:
                     current_amount = self.get_account_balance()
 
                     try:
+                        self.betting_odd_even = random.choice(["O", "E"])
                         self.pick_a_match()
                     except:
                         print("This thread didn't pick a match successfully")
@@ -1201,7 +1203,7 @@ class Bet9jaBot:
 
                         continue
                     else:
-                        print(f"Bet of {next_stake} has been placed successfully")
+                        print(f"Bet of {next_stake} has been placed successfully on {self.betting_odd_even} outcome")
                         backUp = None
 
                     trial += 1
@@ -1244,8 +1246,10 @@ class Bet9jaBot:
                     self.listOfAllLostMatch = []
                     self.listOfAllMatchName = []
                     self.ListOfAllWinMatch = []
-                    if should_stop_event.is_set():
+                    self.num_of_wins_before_terminate -= 1
+                    if should_stop_event.is_set() and self.num_of_wins_before_terminate <= 0:
                         print("Stopping the current thread after winning the match.")
+                        print(f"Final List of all failed trials before win: {listOfAllTotalFailedTrials}")
                         amount_to_use = self.amount_to_use
                         return
                     break
