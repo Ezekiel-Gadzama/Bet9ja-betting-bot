@@ -1080,7 +1080,7 @@ class Bet9jaBot:
         self.live_score_driver = live_score_driver
 
     def bet_num_games_with_trials(self):
-        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp
+        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp, amount_to_use
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         amount_to_use = self.amount_to_use
@@ -1246,6 +1246,7 @@ class Bet9jaBot:
                     self.ListOfAllWinMatch = []
                     if should_stop_event.is_set():
                         print("Stopping the current thread after winning the match.")
+                        amount_to_use = self.amount_to_use
                         return
                     break
                 else:
