@@ -23,8 +23,8 @@ import re
 username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 8  # advice to use a minimum of 5
-potential_monthly_Profit = 4200
-amount_to_use = 19048
+potential_monthly_Profit = 4
+amount_to_use = 7821
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -1137,7 +1137,7 @@ class Bet9jaBot:
                     current_amount = self.get_account_balance()
 
                     try:
-                        self.betting_odd_even = random.choice(["O", "E"])
+                        self.betting_odd_even = "O"  # random.choice(["O", "E"])
                         self.pick_a_match()
                     except:
                         print("This thread didn't pick a match successfully")
