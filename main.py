@@ -22,9 +22,9 @@ import re
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 8  # advice to use a minimum of 5
-potential_monthly_Profit = 4
-amount_to_use = 9900
+number_of_trials = 9  # advice to use a minimum of 5
+potential_monthly_Profit = 60
+amount_to_use = 17112
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -156,7 +156,7 @@ def send_profit_email(passwordT):
         #         print(f"Message sent to {fullname}")
 
         if passwordT:
-            days = 7
+            days = 0
             print(f"Going to sleep for {days} days")
             time.sleep(60 * 60 * 24 * days)
             should_stop_event.set()
@@ -953,10 +953,15 @@ class Bet9jaBot:
         return estimated_return, estimated_risk
 
     def place_bet(self, next_stake):
-        if self.get_account_balance() <= next_stake:
-            self.click_cancel_buttons(0)
-            print('Failed to place bet because account balance is lesser than stake')
+        try:
+            if self.get_account_balance() <= next_stake:
+                self.click_cancel_buttons(0)
+                print('Failed to place bet because account balance is lesser than stake')
+                return False
+        except:
+            print("Error getting account balance")
             return False
+
         try:
             if self.betTimes == 0:
                 try:
