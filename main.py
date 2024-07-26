@@ -24,7 +24,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 17112
+amount_to_use = 21744
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -1344,8 +1344,22 @@ listOfAllBetInstance = [
     for i in range(bet9ja_bot.num_bet_per_hour())  # bet9ja_bot.num_bet_per_hour()
 ]
 
+# Define a global stopping condition
+should_stop = False
+
+
+# Function to stop the recursive function
+def stop_function():
+    global should_stop
+    should_stop = True
+
 
 def run_threads_and_main():
+    global should_stop
+
+    if should_stop:
+        return
+
     # Create threads for all instances except the first one
     threads = [threading.Thread(target=bot_instance.bet_num_games_with_trials, args=()) for bot_instance in
                listOfAllBetInstance]
@@ -1361,9 +1375,11 @@ def run_threads_and_main():
     for thread in threads:
         thread.join()
 
-    # Rerun the function after all threads have ended
-    run_threads_and_main()
+    # Introduce a delay to prevent rapid recursion
+    time.sleep(3)
 
 
 # Initial call to the function
-run_threads_and_main()
+while True:
+    time.sleep(3)
+    run_threads_and_main()
