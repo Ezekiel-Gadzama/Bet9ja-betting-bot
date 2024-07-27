@@ -36,6 +36,7 @@ original_amount_to_use = amount_to_use
 BotPassword = None
 current_amount = amount_to_use
 listOfNotFoundMatchIndex = []
+restart = 0
 # fullname = input("Enter Full name: ")
 # username = input("Enter bet9ja username: ")
 # password = input("Enter bet9ja password: ")
@@ -1086,7 +1087,7 @@ class Bet9jaBot:
         self.live_score_driver = live_score_driver
 
     def bet_num_games_with_trials(self):
-        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp, amount_to_use
+        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp, amount_to_use, restart
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         amount_to_use = self.amount_to_use
@@ -1253,10 +1254,14 @@ class Bet9jaBot:
                     self.ListOfAllWinMatch = []
                     self.num_of_wins_before_terminate -= 1
                     if should_stop_event.is_set() and self.num_of_wins_before_terminate <= 0:
+                        restart += 1
                         print("Stopping the current thread after winning the match.")
                         print(f"Final List of all failed trials before win: {listOfAllTotalFailedTrials}")
                         amount_to_use = self.amount_to_use
-                        return 0
+                        while restart < threading.active_count() - 1:
+                            time.sleep(5)
+                        self.amount_to_use = amount_to_use
+                        restart = 0
                     break
                 else:
 
@@ -1376,28 +1381,8 @@ def run_threads_and_main():
         thread.join()
 
     # Introduce a delay to prevent rapid recursion
-    time.sleep(3)
-    print("second attempt")
-    run_threads_and_main()
-    print("third attempt")
-    run_threads_and_main()
-    print("4th attempt")
-    run_threads_and_main()
-    print("5th attempt")
-    run_threads_and_main()
-    print("6th attempt")
-    run_threads_and_main()
-    print("7th attempt")
-    run_threads_and_main()
-    print("8th attempt")
-    run_threads_and_main()
-    print("9th attempt")
-    run_threads_and_main()
-    print("10th attempt")
 
 
 # Initial call to the function
-while True:
-    time.sleep(3)
-    value = run_threads_and_main()
-    print(f"Value: {value}")
+
+run_threads_and_main()
