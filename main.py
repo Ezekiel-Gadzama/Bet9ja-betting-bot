@@ -24,7 +24,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 21744
+amount_to_use = 25404
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -1256,7 +1256,7 @@ class Bet9jaBot:
                         print("Stopping the current thread after winning the match.")
                         print(f"Final List of all failed trials before win: {listOfAllTotalFailedTrials}")
                         amount_to_use = self.amount_to_use
-                        return
+                        return 0
                     break
                 else:
 
@@ -1358,7 +1358,7 @@ def run_threads_and_main():
     global should_stop
 
     if should_stop:
-        return
+        return 1
 
     # Create threads for all instances except the first one
     threads = [threading.Thread(target=bot_instance.bet_num_games_with_trials, args=()) for bot_instance in
@@ -1377,9 +1377,27 @@ def run_threads_and_main():
 
     # Introduce a delay to prevent rapid recursion
     time.sleep(3)
+    print("second attempt")
+    run_threads_and_main()
+    print("third attempt")
+    run_threads_and_main()
+    print("4th attempt")
+    run_threads_and_main()
+    print("5th attempt")
+    run_threads_and_main()
+    print("6th attempt")
+    run_threads_and_main()
+    print("7th attempt")
+    run_threads_and_main()
+    print("8th attempt")
+    run_threads_and_main()
+    print("9th attempt")
+    run_threads_and_main()
+    print("10th attempt")
 
 
 # Initial call to the function
 while True:
     time.sleep(3)
-    run_threads_and_main()
+    value = run_threads_and_main()
+    print(f"Value: {value}")
