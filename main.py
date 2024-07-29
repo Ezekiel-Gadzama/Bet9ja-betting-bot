@@ -1259,8 +1259,9 @@ class Bet9jaBot:
                         print(f"Final List of all failed trials before win: {listOfAllTotalFailedTrials}")
                         amount_to_use = self.amount_to_use
                         while restart < threading.active_count() - 1:
-                            time.sleep(5)
+                            time.sleep(1)
                         self.amount_to_use = amount_to_use
+                        time.sleep(threading.active_count() + 2)
                         restart = 0
                     break
                 else:
