@@ -24,7 +24,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 25404
+amount_to_use = 28049
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
