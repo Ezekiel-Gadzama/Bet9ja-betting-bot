@@ -24,7 +24,7 @@ username = "ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 9  # advice to use a minimum of 5
 potential_monthly_Profit = 60
-amount_to_use = 28049
+amount_to_use = 7821
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -649,7 +649,7 @@ class Bet9jaBot:
 
             # so that it doesn't pick any match that before it makes the bet the match will have started
             # If there are match elements
-            if len(match_elements) != 0:
+            if len(match_elements) >= sample_size:
                 # Get the text of the first match element
                 first_match_time = match_elements[0].text.split()[0]
 
@@ -730,11 +730,8 @@ class Bet9jaBot:
                     time.sleep(3)
 
             if len(my_match) < sample_size:
-                print("Sample size was less than 3, resetting list")
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
-
-            if len(my_match) == 0:
-                print("Length is equal zero")
+                print("Sample size was less than 3, resetting list")
                 print("sleeping for 120 seconds since length is zero")
                 time.sleep(120)
                 self.login()
