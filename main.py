@@ -22,7 +22,7 @@ import re
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 9  # advice to use a minimum of 5
+number_of_trials = 5  # advice to use a minimum of 5
 potential_monthly_Profit = 60
 amount_to_use = 7821
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
@@ -615,7 +615,7 @@ class Bet9jaBot:
     def pick_a_match(self):
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
-        sample_size = 3
+        sample_size = 2
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
