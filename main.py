@@ -22,8 +22,8 @@ import re
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 5  # advice to use a minimum of 5
-potential_monthly_Profit = 60
+number_of_trials = 8  # advice to use a minimum of 5
+potential_monthly_Profit = 60  # 4 (for 9 threads)
 amount_to_use = 7821
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Goal"  # 'Goal', 'Corner', 'Win team'
@@ -615,7 +615,7 @@ class Bet9jaBot:
     def pick_a_match(self):
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
-        sample_size = 2
+        sample_size = 3
         # Define Lagos timezone
         lagos_timezone = pytz.timezone('Africa/Lagos')
 
@@ -649,7 +649,7 @@ class Bet9jaBot:
 
             # so that it doesn't pick any match that before it makes the bet the match will have started
             # If there are match elements
-            if len(match_elements) >= sample_size:
+            if len(match_elements) >= sample_size - 1:
                 # Get the text of the first match element
                 first_match_time = match_elements[0].text.split()[0]
 
@@ -678,7 +678,7 @@ class Bet9jaBot:
 
         my_match = []
         plus = 0
-        if len(match_elements) >= sample_size:  # you can use != 0 for a case of just 1 thread
+        if len(match_elements) >= sample_size - 1:  # you can use != 0 for a case of just 1 thread
             for index, match in enumerate(match_elements):
                 if index >= sample_size + plus:  # Break the loop after the first three matches
                     break
@@ -729,9 +729,9 @@ class Bet9jaBot:
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
 
-            if len(my_match) < sample_size:
+            if len(my_match) < sample_size - 1:
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
-                print("Sample size was less than 3, resetting list")
+                print(f"Sample size was less than {sample_size - 1}, resetting list")
                 print("sleeping for 120 seconds since length is zero")
                 time.sleep(120)
                 self.login()
