@@ -669,7 +669,7 @@ class Bet9jaBot:
             if counting >= 2:
                 self.match_PST = True
                 return False
-            time.sleep(7200)
+            time.sleep(3600)
             self.has_won(counting)
         elif result != "No result":
             print("Lost the match")
