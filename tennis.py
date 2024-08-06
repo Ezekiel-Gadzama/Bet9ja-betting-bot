@@ -532,7 +532,8 @@ class Bet9jaBot:
                         away_score_total = sum(away_scores)
                         total_score = home_score_total + away_score_total
 
-                        total_score = total_match_played  # because we are using total match and not the total score of the game
+                        # mistake total_score = total_match_played  # because we are using total match and not the
+                        # total score of the game
 
                         start_time_element = WebDriverWait(container, 10).until(
                             EC.presence_of_element_located((By.CSS_SELECTOR, ".time"))
@@ -600,7 +601,7 @@ class Bet9jaBot:
                             print(f"Match Status: {match_status}")
                             if match_status in ["Res"]:
                                 try:
-                                    print("result completed")
+                                    print(f"result completed: total game is {total_score}")
                                     if match_status == "AET":
                                         return "E"
                                     return "O" if total_score % 2 != 0 else "E"
@@ -1382,7 +1383,7 @@ class Bet9jaBot:
         self.live_score_driver.set_window_position(0, 0)
 
         self.driver.get("https://sports.bet9ja.com/sport/tennis/5")
-        self.live_score_driver.get("http://www.goals365.com/tennis.php")
+        self.live_score_driver.get("http://scores.betrescue.com/tennis.php")
         if not self.login():
             return
         self.handle_upcoming_tab()
