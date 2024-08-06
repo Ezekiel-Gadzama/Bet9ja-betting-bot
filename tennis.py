@@ -181,11 +181,11 @@ email_thread = start_email_thread(True)  # to be able to send profit email
 
 
 # Initialize the webdriver instances outside of Bet9jaBot class
-# driver = webdriver.Chrome()
-# live_score_driver = webdriver.Chrome()
+driver = webdriver.Chrome()
+live_score_driver = webdriver.Chrome()
 
-driver = webdriver.Edge()
-live_score_driver = webdriver.Edge()
+# driver = webdriver.Edge()
+# live_score_driver = webdriver.Edge()
 #
 # driver = webdriver.Firefox()
 # live_score_driver = webdriver.Firefox()
@@ -1119,7 +1119,7 @@ class Bet9jaBot:
             except:
                 # If accessing the driver fails, it means the browser is closed
                 print("Browser closed. Reopening...")
-                driver = webdriver.Edge()
+                driver = webdriver.Chrome()
                 # Set the size of the windows
                 driver.set_window_size(800, 800)
                 driver.set_window_position(540, 0)
@@ -1138,7 +1138,7 @@ class Bet9jaBot:
             except:
                 # If accessing the driver fails, it means the browser is closed
                 print("Browser closed. Reopening...")
-                live_score_driver = webdriver.Edge()
+                live_score_driver = webdriver.Chrome()
                 # Set the size of the windows
                 live_score_driver.set_window_size(650, 800)
                 live_score_driver.set_window_position(0, 0)
