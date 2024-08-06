@@ -1122,7 +1122,7 @@ class Bet9jaBot:
                 driver = webdriver.Chrome()
                 # Set the size of the windows
                 driver.set_window_size(800, 800)
-                driver.set_window_position(540, 0)
+                driver.set_window_position(740, 0)
                 driver.get("https://sports.bet9ja.com/sport/soccer/1")
                 self.login()
                 self.handle_popups()
@@ -1377,7 +1377,7 @@ class Bet9jaBot:
     def run(self):
         # Set the size of the windows
         self.driver.set_window_size(800, 800)
-        self.driver.set_window_position(540, 0)
+        self.driver.set_window_position(740, 0)
         self.live_score_driver.set_window_size(650, 800)
         self.live_score_driver.set_window_position(0, 0)
 
