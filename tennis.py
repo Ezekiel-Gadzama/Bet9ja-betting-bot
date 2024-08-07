@@ -201,7 +201,6 @@ retryThirdList = []
 backUp = None
 
 
-
 #
 
 class Bet9jaBot:
@@ -666,7 +665,7 @@ class Bet9jaBot:
             counting += 1
             if result == "next stage":
                 counting -= 1
-            if counting >= 2:
+            if counting >= 6:  # retry 6 time which is 6 hours
                 self.match_PST = True
                 return False
             time.sleep(3600)
@@ -1406,7 +1405,8 @@ print(f"Winning probability: {1 - estimated_risk}    Lost rate: {bet9ja_bot.num_
 # Create and run the bot
 listOfAllBetInstance = [
     Bet9jaBot(username, password, average_odd, amount_to_use, number_of_trials, starting_stake,
-              potential_monthly_Profit, betType, "E")  # "E" if i % 2 == 0 else "O"  #in table tennis most outcome is Even
+              potential_monthly_Profit, betType, "E")
+    # "E" if i % 2 == 0 else "O"  #in table tennis most outcome is Even
     for i in range(bet9ja_bot.num_bet_per_hour())  # bet9ja_bot.num_bet_per_hour()
 ]
 
