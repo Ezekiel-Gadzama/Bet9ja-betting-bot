@@ -665,10 +665,11 @@ class Bet9jaBot:
             counting += 1
             if result == "next stage":
                 counting -= 1
-            if counting >= 6:  # retry 6 time which is 6 hours
+            if counting >= 36:  # retry 6 time which is 6 hours
                 self.match_PST = True
                 return False
-            time.sleep(3600)
+            print("100 seconds sleep to try finding result again")
+            time.sleep(600)
             self.has_won(counting)
         elif result != "No result":
             print("Lost the match")
@@ -1281,7 +1282,7 @@ class Bet9jaBot:
                     self.handle_popups()
                     self.handle_upcoming_tab()
 
-                time.sleep(self.sleep_duration.total_seconds() + 6900)
+                time.sleep(self.sleep_duration.total_seconds() + 5400)
                 print("done sleeping")
                 self.checking_browsers_are_open()
                 counting = 0
