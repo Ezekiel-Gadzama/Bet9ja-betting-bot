@@ -22,9 +22,9 @@ import re
 # Initialize lists to store data
 username = "ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 7  # advice to use a minimum of 5
-potential_monthly_Profit = 12  # 4 (for 9 threads)
-amount_to_use = 16360
+number_of_trials = 5  # advice to use a minimum of 5
+potential_monthly_Profit = 1581  # 4 (for 9 threads)
+amount_to_use = 17247
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -401,7 +401,6 @@ class Bet9jaBot:
         last_match_time = date_time_element.text.strip().split("•")[0].strip()
 
         if self.betType == "Set":
-            time.sleep(4)
             # XPath to locate the accordion item with the text "Total Sets"
             accordion_xpath = (
                 '//div[contains(@class, "accordion-item--open") and .//div[contains(@class, "accordion-text") and contains(text(), "Total Sets")]]'
@@ -498,7 +497,7 @@ class Bet9jaBot:
 
                 except Exception as e:
                     print(f"Exception occurred while changing the date: {e}")
-            time.sleep(10)
+            time.sleep(4)
             try:
                 competition_tables = WebDriverWait(self.live_score_driver, 15).until(
                     EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#allCont > div[id^='s0compTable']"))
@@ -701,7 +700,7 @@ class Bet9jaBot:
             if counting >= 36:  # retry 6 time which is 6 hours
                 self.match_PST = True
                 return False
-            print("100 seconds sleep to try finding result again")
+            print("600 seconds sleep to try finding result again")
             time.sleep(600)
             self.has_won(counting)
         elif result != "No result":
@@ -761,9 +760,9 @@ class Bet9jaBot:
 
                 # Check if the first match starts in less than 4 minutes
                 if abs(first_match_seconds_after_midnight - seconds_after_midnight) < 240:
-                    print("sleeping to pick another match instead: wait for 100 seconds")
+                    print("sleeping to pick another match instead: wait for 10 seconds")
                     listOfNotFoundMatchIndex = []
-                    time.sleep(100)
+                    time.sleep(10)
                     self.login()
                     time.sleep(3)
                     self.handle_popups()
@@ -829,8 +828,8 @@ class Bet9jaBot:
             if len(my_match) < sample_size - 1:
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
                 print(f"Sample size was less than {sample_size - 1}, resetting list")
-                print("sleeping for 120 seconds since length is zero")
-                time.sleep(120)
+                print("sleeping for 10 seconds since length is zero")
+                time.sleep(10)
                 self.login()
                 self.handle_popups()
                 self.handle_upcoming_tab()
@@ -878,16 +877,16 @@ class Bet9jaBot:
                         self.handle_upcoming_tab()
                         self.pick_a_match()
                 except:
-                    print("pick a match error 1 sleeping for 120 seconds")
-                    time.sleep(120)
+                    print("pick a match error 1 sleeping for 10 seconds")
+                    time.sleep(10)
                     self.login()
                     self.handle_popups()
                     self.handle_upcoming_tab()
                     self.pick_a_match()
 
         else:
-            print("pick a match error 5 lol sleeping for 120 seconds")
-            time.sleep(120)
+            print("pick a match error 5 lol sleeping for 10 seconds")
+            time.sleep(10)
             self.login()
             self.handle_popups()
             self.handle_upcoming_tab()
@@ -1015,7 +1014,7 @@ class Bet9jaBot:
                 )
                 upcoming_tab.click()
 
-                time.sleep(7)
+                time.sleep(4)
 
                 # XPath to locate the "Sets" tab
                 sets_tab_xpath = '//li[contains(@class, "sports-view__bar-navitem") and contains(text(), "Sets")]'
@@ -1034,13 +1033,13 @@ class Bet9jaBot:
                     sets_td = driver.find_element(By.XPATH, "//td[@title='Sets']")
                     sets_td.click()
 
-                time.sleep(6)
+                time.sleep(5)
 
                 break
             except Exception as e:
                 print(f"An error occurred while handling the upcoming tab: {e}")
                 self.driver.get("https://sports.bet9ja.com/sport/tennis/5")
-                time.sleep(100)
+                time.sleep(10)
                 try:
                     self.handle_popups()
                     if not self.login():
