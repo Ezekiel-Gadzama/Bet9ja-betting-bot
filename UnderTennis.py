@@ -636,7 +636,7 @@ class Bet9jaBot:
                                     print(f"result completed: total game is {total_score}")
                                     if match_status == "AET":
                                         return "U"
-                                    return "U" if total_score % 2 != 0 else "O"
+                                    return "U" if total_score <= 2 else "O"
                                 except:
                                     print("Match has no result after betting")
                                     return "Ret"
