@@ -24,7 +24,7 @@ username = "Mobolaji3002"
 password = "Avis10alk"
 number_of_trials = 5  # advice to use a minimum of 5
 potential_monthly_Profit = 1581  # 1581 4 (for 9 threads) 1581
-amount_to_use = 2000
+amount_to_use = 25078
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -535,20 +535,21 @@ class Bet9jaBot:
                 else:
                     print("Lost the match")
                     self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
-                    return "No result"
+                    return "Lost"
             except Exception as e:
-                print(f"Repeat beacuse of {e}")
+                print(f"Repeat because of {e}")
                 return "Repeat"
 
     def has_won(self, counting):
         with won_lock:
+            time.sleep(7)
             inter = 0
             while True:
                 try:
+                    self.live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
                     print(f"finding result for: {self.listOfAllMatchName[-1][0]} vs {self.listOfAllMatchName[-1][1]}")
                     result = self.get_odd_or_even_score(self.listOfAllMatchName[-1][0], self.listOfAllMatchName[-1][1],
                                                         False)
-                    self.live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
                     break
                 except Exception as e:
                     print(f"Exception occurred: {e}")
@@ -568,9 +569,10 @@ class Bet9jaBot:
         self.match_starting_time = None
         if result == self.betting_odd_even:
             self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
-            print("Won the match")
+            print("Won the match now")
             return True
         elif result == "Ret":
+            print("result is Ret")
             self.match_PST = True
             return False
         elif result == "Repeat" or result == "next stage":
@@ -583,8 +585,8 @@ class Bet9jaBot:
                 return False
             print("600 seconds sleep to try finding result again")
             time.sleep(600)
-            self.has_won(counting)
-        elif result != "No result":
+            return self.has_won(counting)
+        else:
             print("Lost the match")
             self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
             return False
