@@ -463,18 +463,16 @@ class Bet9jaBot:
                 return "Not Found"
             else:
                 return "Found"
-        self.login()
-        self.click_cancel_buttons(0)
 
         while True:
             try:
                 try:
                     # Wait until the input field and button are present in the DOM and visible
-                    input_field = WebDriverWait(self.driver, 10).until(
+                    input_field = WebDriverWait(self.live_score_driver, 10).until(
                         EC.visibility_of_element_located((By.XPATH, "//input[@placeholder='Bet ID']")))
                     # Set the value of the input field
                     input_field.send_keys(self.betID)
-                    check_button = WebDriverWait(self.driver, 10).until(
+                    check_button = WebDriverWait(self.live_score_driver, 10).until(
                         EC.element_to_be_clickable((By.XPATH, "//button[text()='Check']"))
                     )
                     # Click the "Check" button
@@ -492,19 +490,19 @@ class Bet9jaBot:
                     print("Failed to check result using ID")
 
                 # Wait for at least one element with class "mybets-item" to be present
-                WebDriverWait(self.driver, 10).until(
+                WebDriverWait(self.live_score_driver, 10).until(
                     EC.presence_of_element_located((By.CLASS_NAME, "mybets-item"))
                 )
 
             except:
-                self.driver.refresh()
+                self.live_score_driver.refresh()
                 time.sleep(2)
                 print("Failed to get result")
                 continue
 
             while True:
                 try:
-                    element = self.driver.find_element(By.CLASS_NAME, "mybets-game")
+                    element = self.live_score_driver.find_element(By.CLASS_NAME, "mybets-game")
 
                     time.sleep(1)
                     # Get the text from the element
@@ -518,13 +516,17 @@ class Bet9jaBot:
                     break
 
             try:
-                bet_status = WebDriverWait(self.driver, 10).until(
+                time.sleep(3)
+                print("before bet status")
+                bet_status = WebDriverWait(self.live_score_driver, 10).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR,
                          ".mybets-holder__info-item span.txt-red, .mybets-holder__info-item span.txt-green"))
                 )
+
+                print("passed bet status")
                 if bet_status.text != "Lost" or "Cancelled":
-                    ListOfAllWinMatch.append(ListOfAllMatch[-1])
+                    self.ListOfAllWinMatch.append(self.ListOfAllMatch[-1])
                     print("Won the match")
                     return self.betting_odd_even
                 elif bet_status.text == "Cancelled":
@@ -532,9 +534,10 @@ class Bet9jaBot:
                     return "No result"
                 else:
                     print("Lost the match")
-                    listOfAllLostMatch.append(ListOfAllMatch[-1])
+                    self.listOfAllLostMatch.append(self.ListOfAllMatch[-1])
                     return "No result"
-            except:
+            except Exception as e:
+                print(f"Repeat beacuse of {e}")
                 return "Repeat"
 
     def has_won(self, counting):
@@ -545,7 +548,7 @@ class Bet9jaBot:
                     print(f"finding result for: {self.listOfAllMatchName[-1][0]} vs {self.listOfAllMatchName[-1][1]}")
                     result = self.get_odd_or_even_score(self.listOfAllMatchName[-1][0], self.listOfAllMatchName[-1][1],
                                                         False)
-                    self.driver.get("https://sports.bet9ja.com/sport/tennis/5")
+                    self.live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
                     break
                 except Exception as e:
                     print(f"Exception occurred: {e}")
@@ -1092,7 +1095,7 @@ class Bet9jaBot:
                 # Set the size of the windows
                 live_score_driver.set_window_size(650, 800)
                 live_score_driver.set_window_position(0, 0)
-                live_score_driver.get("http://scores.betrescue.com/tennis.php")
+                live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
         self.driver = driver
         self.live_score_driver = live_score_driver
 
@@ -1334,7 +1337,7 @@ class Bet9jaBot:
         self.live_score_driver.set_window_position(0, 0)
 
         self.driver.get("https://sports.bet9ja.com/sport/tennis/5")
-        self.live_score_driver.get("http://scores.betrescue.com/tennis.php")
+        self.live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
         if not self.login():
             return
         self.handle_upcoming_tab()
