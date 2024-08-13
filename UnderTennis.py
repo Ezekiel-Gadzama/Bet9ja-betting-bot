@@ -20,8 +20,8 @@ import os
 import re
 
 # Initialize lists to store data
-username = "Mobolaji3002"
-password = "Avis10alk"
+username = "Ezekielgadzama"
+password = "Ezekiel23"
 number_of_trials = 5  # advice to use a minimum of 5
 potential_monthly_Profit = 1581  # 1581 4 (for 9 threads) 1581
 amount_to_use = 25078
