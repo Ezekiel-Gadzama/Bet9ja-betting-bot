@@ -526,7 +526,7 @@ class Bet9jaBot:
 
                 print("passed bet status")
                 if bet_status.text != "Lost" or "Cancelled":
-                    self.ListOfAllWinMatch.append(self.ListOfAllMatch[-1])
+                    self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
                     print("Won the match")
                     return self.betting_odd_even
                 elif bet_status.text == "Cancelled":
@@ -534,7 +534,7 @@ class Bet9jaBot:
                     return "No result"
                 else:
                     print("Lost the match")
-                    self.listOfAllLostMatch.append(self.ListOfAllMatch[-1])
+                    self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
                     return "No result"
             except Exception as e:
                 print(f"Repeat beacuse of {e}")
