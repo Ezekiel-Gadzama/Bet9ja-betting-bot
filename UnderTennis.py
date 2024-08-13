@@ -20,11 +20,11 @@ import os
 import re
 
 # Initialize lists to store data
-username = "ezekielgadzama"
-password = "Ezekiel23"
+username = "Mobolaji3002"
+password = "Avis10alk"
 number_of_trials = 5  # advice to use a minimum of 5
-potential_monthly_Profit = 1581  # 4 (for 9 threads)
-amount_to_use = 17247
+potential_monthly_Profit = 1581  # 1581 4 (for 9 threads) 1581
+amount_to_use = 2000
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -183,7 +183,7 @@ email_thread = start_email_thread(True)  # to be able to send profit email
 # Initialize the webdriver instances outside of Bet9jaBot class
 driver = webdriver.Chrome()
 live_score_driver = webdriver.Chrome()
-
+#
 # driver = webdriver.Edge()
 # live_score_driver = webdriver.Edge()
 #
@@ -234,6 +234,7 @@ class Bet9jaBot:
         self.match_PST = False
         self.betTimes = 0
         self.num_of_wins_before_terminate = 1
+        self.betID = None
 
     def click_cancel_buttons(self, number_to_keep):
         value = False
@@ -453,212 +454,88 @@ class Bet9jaBot:
         given_home_team = given_home_team.replace(",", "")
         given_away_team = given_away_team.replace(",", "")
 
-        def filter_short_words(word_list):
-            return [word for word in word_list if len(word) >= 3]
+        def contains_srl(team_name):
+            return "srl" in team_name.lower()
 
-        con = 0
-        tried = 0
+        # Check if either team name contains "Srl"
+        if find:  # just to make it readable, so I put it in first line
+            if contains_srl(given_home_team) or contains_srl(given_away_team):
+                return "Not Found"
+            else:
+                return "Found"
+        self.login()
+        self.click_cancel_buttons(0)
+
         while True:
-            con += 1
-            # Quit the current driver
-            global live_score_driver
-            if tried >= 4:
-                print(f"It couldn't find result after several trials of {given_home_team} vs {given_away_team}")
-                return random.choice(["O", "E"])
-            if con % 3 == 0:
-                tried += 1
-                self.live_score_driver.quit()
-                # Create a new instance of the driver
-                self.checking_browsers_are_open()
-            elif con % 2:  # this will make it only refresh when it is finding the result of the match
-                self.live_score_driver = live_score_driver
-                self.live_score_driver.refresh()
-            time.sleep(4)
-            if con % 7 == 0:
-                try:
-                    # Wait until the dateBox element is present
-                    date_box = WebDriverWait(live_score_driver, 10).until(
-                        EC.presence_of_element_located((By.ID, "dateBox"))
-                    )
-
-                    # Get all option elements within the dateBox
-                    options = date_box.find_elements(By.TAG_NAME, "option")
-
-                    # Calculate yesterday's date
-                    yesterday = datetime.now() - timedelta(days=1)
-                    yesterday_str = yesterday.strftime('%Y-%m-%d')
-
-                    # Iterate through the options to find and click the one corresponding to yesterday's date
-                    for option in options:
-                        if option.get_attribute("value") == yesterday_str:
-                            option.click()
-                            time.sleep(4)  # Wait for the page to reload with new date
-                            break
-
-                except Exception as e:
-                    print(f"Exception occurred while changing the date: {e}")
-            time.sleep(4)
             try:
-                competition_tables = WebDriverWait(self.live_score_driver, 15).until(
-                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#allCont > div[id^='s0compTable']"))
+                try:
+                    # Wait until the input field and button are present in the DOM and visible
+                    input_field = WebDriverWait(self.driver, 10).until(
+                        EC.visibility_of_element_located((By.XPATH, "//input[@placeholder='Bet ID']")))
+                    # Set the value of the input field
+                    input_field.send_keys(self.betID)
+                    check_button = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "//button[text()='Check']"))
+                    )
+                    # Click the "Check" button
+                    time.sleep(3)
+                    check_button.click()
 
+                    try:
+                        time.sleep(6)
+                        check_button.click()
+                        input_field.clear()
+                    except:
+                        print("clicking issue")
+
+                except:
+                    print("Failed to check result using ID")
+
+                # Wait for at least one element with class "mybets-item" to be present
+                WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, "mybets-item"))
                 )
-            except Exception as e:
-                print(f"Exception occurred while waiting for competition tables: {e}")
+
+            except:
+                self.driver.refresh()
+                time.sleep(2)
+                print("Failed to get result")
                 continue
 
-            outer_break = False  # Flag to indicate if we need to break out of the outer loop
-            if con > 5:
-                print(f"competition_tables length: {len(competition_tables)}")
-            numberOfError = 0
-            for table in competition_tables:
-                if numberOfError > 5:
-                    time.sleep(7)
-                    break
+            while True:
                 try:
-                    game_containers = WebDriverWait(table, 15).until(
-                        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[id^='s0gametr']"))
-                    )
-                except Exception as e:
-                    numberOfError += 1
-                    print(f"Exception occurred while waiting for game containers: {e}")
-                    continue
+                    element = self.driver.find_element(By.CLASS_NAME, "mybets-game")
 
-                if con % 4 == 0 or con % 5 == 0:
-                    print(f"game length: {len(game_containers)}")
-                for container in game_containers:
-                    try:
-                        home_team = WebDriverWait(container, 10).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, ".teamName.row1"))
-                        ).text
-                        away_team = WebDriverWait(container, 10).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, ".teamName.row2"))
-                        ).text
+                    time.sleep(1)
+                    # Get the text from the element
+                    team_names = element.text
+                    print(f"teams: {team_names}")
 
-                        scores_table = container.find_element(By.CSS_SELECTOR, ".allScores table")
-                        rows = scores_table.find_elements(By.TAG_NAME, "tr")
+                    break
+                except:
+                    time.sleep(3)
+                    print("problem no dey finish")
+                    break
 
-                        home_scores = []
-                        away_scores = []
-                        g = 1
-
-                        total_match_played = 0
-                        for row in rows:
-                            cells = row.find_elements(By.TAG_NAME, "td")
-                            if g % 2 != 0:
-                                for i in range(len(cells)):
-                                    home_score_text = cells[i].text.strip()
-                                    if home_score_text.isdigit():
-                                        home_scores.append(int(home_score_text))
-                                        total_match_played += 1
-                            else:
-                                for i in range(len(cells)):
-                                    away_score_text = cells[i].text.strip()
-                                    if away_score_text.isdigit():
-                                        away_scores.append(int(away_score_text))
-                            g += 1
-
-                        home_score_total = sum(home_scores)
-                        away_score_total = sum(away_scores)
-                        total_score = home_score_total + away_score_total
-                        total_score = total_match_played  # because I am checking to total sets
-
-                        # mistake total_score = total_match_played  # because we are using total match and not the
-                        # total score of the game
-
-                        start_time_element = WebDriverWait(container, 10).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, ".time"))
-                        )
-
-                        # Assuming start_time is in 24-hour format, e.g., "15:30"
-                        start_time_str = start_time_element.text.strip()
-
-                        # UK time zone
-                        uk_tz = pytz.timezone('Europe/London')
-                        # Nigeria time zone
-                        nigeria_tz = pytz.timezone('Africa/Lagos')
-
-                        # Parse the time string
-                        start_time_uk = datetime.strptime(start_time_str, "%H:%M")
-
-                        # Localize the start time to the UK time zone
-                        start_time_uk = uk_tz.localize(start_time_uk)
-
-                        # Convert the time to Nigeria time
-                        start_time_nigeria = start_time_uk.astimezone(nigeria_tz)
-
-                        # Format the time in Nigeria time zone
-                        start_time_nigeria_str = start_time_nigeria.strftime("%H:%M")
-                        start_time = start_time_nigeria_str
-
-                        match_status_element = WebDriverWait(container, 10).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, "[id^='sp0min']"))
-                        )
-                        match_status = match_status_element.text.strip()
-
-                    except Exception as e:
-                        print(f"Container Exception occurred: {e}")
-                        continue
-
-                    try:
-                        home_team_list = filter_short_words(home_team.split())
-                        away_team_list = filter_short_words(away_team.split())
-                        given_home_team_list = filter_short_words(given_home_team.split())
-                        given_away_team_list = filter_short_words(given_away_team.split())
-
-                        if con % 4 == 0 or con % 5 == 0:
-                            print(
-                                f"{home_team_list} compare {given_home_team_list}   and  {away_team_list} compare {given_away_team_list} : {start_time} = ={self.find_match_time} == {self.match_starting_time}")
-
-                        timeIs = False
-
-                        # if start_time == self.find_match_time or start_time == self.match_starting_time or tried >= 2:
-                        #     timeIs = True
-                        timeIs = True  # fake assumption because the score website time is usually wrong
-
-                        if ((set(home_team_list).intersection(given_home_team_list) and
-                             set(away_team_list).intersection(given_away_team_list)) or
-                            (set(home_team_list).intersection(given_home_team_list) and
-                             set(home_team_list).intersection(
-                                 given_away_team_list))) and timeIs:
-
-                            print(f"Found: {home_team_list} vs {away_team_list}")
-                            if (match_status == "Ret" or match_status == "-") and find:
-                                print("Match has been postponed")
-                                return "Not Found"
-                            elif find:
-                                return "Found"
-
-                            print(f"Match Status: {match_status}")
-                            if match_status in ["Res"]:
-                                try:
-                                    print(f"result completed: total game is {total_score}")
-                                    if match_status == "AET":
-                                        return "U"
-                                    return "U" if total_score <= 2 else "O"
-                                except:
-                                    print("Match has no result after betting")
-                                    return "Ret"
-                            elif match_status == "Ret" or match_status == "Ssp" or match_status == "Pst":
-                                print("Match was Postponed/Suspended after betting")
-                                return "Ret"
-                            elif match_status == "-" or match_status == "" or match_status == "'":
-                                return "Repeat"
-                            elif match_status == "1S" or match_status == "2S" or match_status == "3S" or match_status == "4S" or match_status == "5S":
-                                return "next stage"
-
-                            outer_break = True
-                    except Exception as e:
-                        print(f"Exception occurred in here: {e}")
-                        continue
-
-                if outer_break:
-                    break  # Break out of the outer loop
-            if find:
-                print("Not Found")
-                return "Not Found"
-            print("150 seconds")
-            time.sleep(150)
+            try:
+                bet_status = WebDriverWait(self.driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR,
+                         ".mybets-holder__info-item span.txt-red, .mybets-holder__info-item span.txt-green"))
+                )
+                if bet_status.text != "Lost" or "Cancelled":
+                    ListOfAllWinMatch.append(ListOfAllMatch[-1])
+                    print("Won the match")
+                    return self.betting_odd_even
+                elif bet_status.text == "Cancelled":
+                    self.match_PST = True
+                    return "No result"
+                else:
+                    print("Lost the match")
+                    listOfAllLostMatch.append(ListOfAllMatch[-1])
+                    return "No result"
+            except:
+                return "Repeat"
 
     def has_won(self, counting):
         with won_lock:
@@ -668,13 +545,14 @@ class Bet9jaBot:
                     print(f"finding result for: {self.listOfAllMatchName[-1][0]} vs {self.listOfAllMatchName[-1][1]}")
                     result = self.get_odd_or_even_score(self.listOfAllMatchName[-1][0], self.listOfAllMatchName[-1][1],
                                                         False)
+                    self.driver.get("https://sports.bet9ja.com/sport/tennis/5")
                     break
                 except Exception as e:
                     print(f"Exception occurred: {e}")
                     print("Sleeping 3 seconds to refind result")
                     inter += 1
                     if inter > 2:
-                        result = random.choice(["O", "E"])
+                        result = random.choice(["U", "O"])
                         print(f"result was not found and a random result was chosen as {result}")
                         break
                     time.sleep(3)
@@ -805,7 +683,7 @@ class Bet9jaBot:
                 sleep_duration = (match_datetime - current_time).total_seconds()
                 try:
                     """" (self.find_match_time == first_match_time) and """
-                    if index not in listOfNotFoundMatchIndex and sleep_duration < 6000:
+                    if index not in listOfNotFoundMatchIndex and sleep_duration < 4000:
                         if (self.get_odd_or_even_score(match.text.splitlines()[1], match.text.splitlines()[2],
                                                        True) == "Found"):
                             my_match.append(match)
@@ -817,7 +695,7 @@ class Bet9jaBot:
                             plus += 1
                     else:
                         plus += 1
-                        if sleep_duration >= 6000:
+                        if sleep_duration >= 4000:
                             break
 
                 except Exception as e:
@@ -1095,6 +973,17 @@ class Bet9jaBot:
 
                     place_bet_button.click()
 
+                    # Locate the element containing the Bet ID using its unique identifier
+                    bet_id_element = WebDriverWait(self.driver, 30).until(EC.visibility_of_element_located(
+                        (By.XPATH, "//div[contains(@class, 'table-a')]//span[contains(text(), 'ID:')]")))
+
+                    # Extract the Bet ID from the element's text
+                    bet_id_text = bet_id_element.text
+                    self.betID = bet_id_text.split("ID: ")[1].strip()
+
+                    # Print the extracted Bet ID
+                    print("Bet ID:", self.betID)
+
                     # Wait for the "Continue" button to be clickable
                     continue_button = WebDriverWait(self.driver, 10).until(
                         EC.element_to_be_clickable((By.CLASS_NAME, "btn-betslip-s"))
@@ -1140,7 +1029,7 @@ class Bet9jaBot:
             if teams != list(self.listOfAllMatchName[-1]) or float(outcome_text) != float(next_stake):
                 print("The bet was void")
                 print("rechecking again")
-                time.sleep(5)
+                time.sleep(10)
                 self.betTimes += 1
                 if self.betTimes >= 3:
                     self.betTimes = 0
@@ -1148,6 +1037,19 @@ class Bet9jaBot:
                     return False
                 self.driver.refresh()
                 return self.place_bet(next_stake)
+            #
+            # # Locate and click the specified accordion toggle element
+            # while True:
+            #     try:
+            #         singles_toggle = WebDriverWait(self.driver, 10).until(
+            #             EC.element_to_be_clickable((By.XPATH,
+            #                                         '//div[contains(@class, "accordion-toggle") and .//div[contains(@class, "accordion-text") and text()="Singles"]]'))
+            #         )
+            #         singles_toggle.click()
+            #         print("Clicked on Singles accordion toggle")
+            #         break
+            #     except Exception as e:
+            #         print("Could not click on Singles accordion toggle:", str(e))
 
             return True
         except Exception as e:
@@ -1251,6 +1153,8 @@ class Bet9jaBot:
                     current_amount = self.get_account_balance()
 
                     try:
+                        print("Going to sleep for 200 seconds so that all bets is not on fewer games")
+                        time.sleep(200)
                         self.pick_a_match()
                     except:
                         print("This thread didn't pick a match successfully")
@@ -1347,7 +1251,7 @@ class Bet9jaBot:
                         f"current gain: {current_gain} = ({self.listOfAllOdds[-1]} * {self.listOfAllAmountPlaced[-1]}) - {np.sum(self.listOfAllAmountPlaced)}")
                     sum_of_all_profit_made += current_gain
                     print(f"Total Profit Made: {sum_of_all_profit_made}")
-                    self.amount_to_use = amount_to_use + sum_of_all_profit_made - 10
+                    self.amount_to_use = amount_to_use + (sum_of_all_profit_made / 1) - 10
                     self.number_of_trials += 1  # some important reason for this
                     if self.stake_distribution_starting_stake()[
                         0] >= 100 and self.number_of_trials - 1 < original_number_of_trials:
