@@ -525,11 +525,11 @@ class Bet9jaBot:
                 )
 
                 print(f"passed bet status: {bet_status.text}")
-                if bet_status.text != "Lost" and "Cancelled" and "Void":
+                if bet_status.text != "Lost" and bet_status.text != "Cancelled" and bet_status.text != "Void":
                     self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
                     print(f"Won the match: {self.listOfAllMatch[-1]}")
                     return self.betting_odd_even
-                elif bet_status.text == "Cancelled" or "Void":
+                elif bet_status.text == "Cancelled" or bet_status.text == "Void":
                     print(f"Cancelled match: {self.listOfAllMatch[-1]}")
                     self.match_PST = True
                     return "No result"
