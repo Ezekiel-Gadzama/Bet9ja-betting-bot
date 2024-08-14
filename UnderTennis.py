@@ -521,19 +521,20 @@ class Bet9jaBot:
                 bet_status = WebDriverWait(self.live_score_driver, 10).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR,
-                         ".mybets-holder__info-item span.txt-red, .mybets-holder__info-item span.txt-green"))
+                         ".mybets-holder__info-item span.txt-red, .mybets-holder__info-item span.txt-green, .mybets-holder__info-item span"))
                 )
 
-                print("passed bet status")
-                if bet_status.text != "Lost" or "Cancelled":
+                print(f"passed bet status: {bet_status.text}")
+                if bet_status.text != "Lost" and "Cancelled" and "Void":
                     self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
-                    print("Won the match")
+                    print(f"Won the match: {self.listOfAllMatch[-1]}")
                     return self.betting_odd_even
-                elif bet_status.text == "Cancelled":
+                elif bet_status.text == "Cancelled" or "Void":
+                    print(f"Cancelled match: {self.listOfAllMatch[-1]}")
                     self.match_PST = True
                     return "No result"
                 else:
-                    print("Lost the match")
+                    print(f"Lost the match: {self.listOfAllMatch[-1]}")
                     self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
                     return "Lost"
             except Exception as e:
@@ -569,10 +570,10 @@ class Bet9jaBot:
         self.match_starting_time = None
         if result == self.betting_odd_even:
             self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
-            print("Won the match now")
+            print(f"Won the match now: {self.listOfAllMatch[-1]}")
             return True
         elif result == "Ret":
-            print("result is Ret")
+            print(f"result is Ret: {self.listOfAllMatch[-1]}")
             self.match_PST = True
             return False
         elif result == "Repeat" or result == "next stage":
@@ -581,13 +582,14 @@ class Bet9jaBot:
             if result == "next stage":
                 counting -= 1
             if counting >= 36:  # retry 6 time which is 6 hours
+                print(f"Postponed match: {self.listOfAllMatch[-1]}")
                 self.match_PST = True
                 return False
             print("600 seconds sleep to try finding result again")
             time.sleep(600)
             return self.has_won(counting)
         else:
-            print("Lost the match")
+            print(f"Lost the match: {self.listOfAllMatch[-1]}")
             self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
             return False
 
