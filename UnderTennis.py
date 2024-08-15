@@ -534,8 +534,8 @@ class Bet9jaBot:
                     self.match_PST = True
                     return "No result"
                 elif "Lost".lower() in bet_status.text.lower():
-                    print(f"Lost the match: {self.listOfAllMatch[-1]}")
-                    self.listOfAllLostMatch.append(self.listOfAllMatchName[-1])
+                    print(f"Lost the match: {self.listOfAllMatchName[-1]}")
+                    self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
                     return "Lost"
                 else:
                     print(f"Return repeat for :{self.listOfAllMatchName[-1]}")
