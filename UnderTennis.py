@@ -23,8 +23,8 @@ import re
 username = "Ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 5  # advice to use a minimum of 5
-potential_monthly_Profit = 13410  # 1581 4 (for 9 threads) 1581
-amount_to_use = 25078
+potential_monthly_Profit = 1602  # 1581 4 (for 9 threads) 1581
+amount_to_use = 13410  # -1,761
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -714,7 +714,8 @@ class Bet9jaBot:
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
             if len(my_match) == 1:
-                print(f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
+                print(
+                    f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
                 time.sleep(int((200 * 22) / threading.active_count()))
 
             if len(my_match) < 1:  # < sample_size - 1:
@@ -1167,7 +1168,8 @@ class Bet9jaBot:
                     current_amount = self.get_account_balance()
 
                     try:
-                        print(f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
+                        print(
+                            f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
                         time.sleep(int((200 * 22) / threading.active_count()))
                         self.pick_a_match()
                     except:
