@@ -154,7 +154,7 @@ def send_profit_email(passwordT):
         #         server.login(sender_email, password)
         #         server.sendmail(sender_email, recipient, message.as_string())
         #         server.sendmail(sender_email, binomialBetBotEmail, message.as_string())
-        #         print(f"Message sent to {fullname}")
+        #         print(f"Message sent to {fullname}")`
 
         if passwordT:
             days = 0
@@ -1284,10 +1284,8 @@ class Bet9jaBot:
                         restart += 1
                         print("Stopping the current thread after winning the match.")
                         print(f"Final List of all failed trials before win: {listOfAllTotalFailedTrials}")
-                        amount_to_use = self.amount_to_use
                         while restart < threading.active_count() - 1:
                             time.sleep(1)
-                        self.amount_to_use = amount_to_use
                         time.sleep(threading.active_count() + 2)
                         restart = 0
                     break
