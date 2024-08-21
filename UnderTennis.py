@@ -22,9 +22,9 @@ import re
 # Initialize lists to store data
 username = "Ezekielgadzama"
 password = "Ezekiel23"
-number_of_trials = 5  # advice to use a minimum of 5
-potential_monthly_Profit = 1602  # 1581 4 (for 9 threads) 1581
-amount_to_use = 13410  # -1,761
+number_of_trials = 7  # advice to use a minimum of 5
+potential_monthly_Profit = 2.743  # 1581 4 (for 9 threads) 1581
+amount_to_use = 15000  # -1,761
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -36,6 +36,7 @@ original_amount_to_use = amount_to_use
 BotPassword = None
 current_amount = amount_to_use
 listOfNotFoundMatchIndex = []
+number_of_threads_remaining = 0
 restart = 0
 # fullname = input("Enter Full name: ")
 # username = input("Enter bet9ja username: ")
@@ -598,6 +599,7 @@ class Bet9jaBot:
             return False
 
     def pick_a_match(self):
+        global restart, number_of_threads_remaining
         self.click_cancel_buttons(0)
         global listOfNotFoundMatchIndex
         sample_size = 3
@@ -714,9 +716,10 @@ class Bet9jaBot:
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
             if len(my_match) == 1:
+
                 print(
-                    f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
-                time.sleep(int((200 * 22) / threading.active_count()))
+                    f"Going to sleep for {int((200 * 22) / (number_of_threads_remaining - restart))} seconds so that all bets is not on fewer games")
+                time.sleep(int((200 * 22) / (number_of_threads_remaining - restart)))
 
             if len(my_match) < 1:  # < sample_size - 1:
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
@@ -1112,7 +1115,7 @@ class Bet9jaBot:
         self.live_score_driver = live_score_driver
 
     def bet_num_games_with_trials(self):
-        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp, amount_to_use, restart
+        global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp, amount_to_use, restart, number_of_threads_remaining
         time.sleep(20)  # Just so that all other thread will wait for the main thread to login
         ############################################################
         amount_to_use = self.amount_to_use
@@ -1131,7 +1134,7 @@ class Bet9jaBot:
         total_failed_trials = 0
         listOfAllTotalFailedTrials = []
         original_number_of_trials = self.number_of_trials
-
+        number_of_threads_remaining = threading.active_count()
         while True:
             self.checking_browsers_are_open()
             self.starting_stake = self.stake_distribution_starting_stake()[0]
@@ -1170,7 +1173,7 @@ class Bet9jaBot:
                     try:
                         print(
                             f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
-                        time.sleep(int((200 * 22) / threading.active_count()))
+                        time.sleep(int((200 * 22) / (number_of_threads_remaining - restart)))
                         self.pick_a_match()
                     except:
                         print("This thread didn't pick a match successfully")
@@ -1287,6 +1290,7 @@ class Bet9jaBot:
                         while restart < threading.active_count() - 1:
                             time.sleep(1)
                         time.sleep(threading.active_count() + 2)
+                        number_of_threads_remaining = threading.active_count()
                         restart = 0
                     break
                 else:
