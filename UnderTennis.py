@@ -464,7 +464,7 @@ class Bet9jaBot:
                 return "Not Found"
             else:
                 return "Found"
-
+        numbered = 0
         while True:
             try:
                 try:
@@ -488,6 +488,10 @@ class Bet9jaBot:
                         print("clicking issue")
 
                 except:
+                    numbered += 1
+                    if numbered > 40:
+                        print("number is greater than 40 so it returned lost")
+                        return "Lost"
                     print("Failed to check result using ID")
 
                 # Wait for at least one element with class "mybets-item" to be present
