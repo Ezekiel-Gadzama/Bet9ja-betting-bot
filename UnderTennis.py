@@ -639,6 +639,7 @@ class Bet9jaBot:
                 return "Not Found"
             print("150 seconds")
             time.sleep(150)
+        return "No result"
 
     def get_odd_or_even_score(self, given_home_team, given_away_team, find):
         print(f"Looking for: {given_home_team} vs {given_away_team}")
