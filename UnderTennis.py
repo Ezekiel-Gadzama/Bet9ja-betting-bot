@@ -184,6 +184,7 @@ email_thread = start_email_thread(True)  # to be able to send profit email
 # Initialize the webdriver instances outside of Bet9jaBot class
 driver = webdriver.Chrome()
 live_score_driver = webdriver.Chrome()
+live_score_driver_liveScores = webdriver.Chrome()
 #
 # driver = webdriver.Edge()
 # live_score_driver = webdriver.Edge()
@@ -217,6 +218,7 @@ class Bet9jaBot:
         self.betType = betType
         self.driver = driver
         self.live_score_driver = live_score_driver
+        self.live_score_driver_liveScores = live_score_driver_liveScores
         self.listOfAllOdds = []
         self.listOfAllAmountPlaced = []
         self.listOfAllMatch = []
@@ -450,6 +452,194 @@ class Bet9jaBot:
                 print("Set Over Odds Value:", over_odds_value)
                 self.listOfAllOdds.append(over_odds_value)
 
+    def get_odd_or_even_score_liveScores(self, given_home_team, given_away_team, find):
+        global live_score_driver_liveScores
+        print(f"In lives score Looking for: {given_home_team} vs {given_away_team}")
+        given_home_team = given_home_team.replace(",", "")
+        given_away_team = given_away_team.replace(",", "")
+
+        con = 0
+        while con < 8:
+            con += 1
+            if con % 7 == 0:
+                try:
+                    # Wait until the dateBox element is present
+                    date_box = WebDriverWait(self.live_score_driver_liveScores, 10).until(
+                        EC.presence_of_element_located((By.ID, "dateBox"))
+                    )
+
+                    # Get all option elements within the dateBox
+                    options = date_box.find_elements(By.TAG_NAME, "option")
+
+                    # Calculate yesterday's date
+                    yesterday = datetime.now() - timedelta(days=1)
+                    yesterday_str = yesterday.strftime('%Y-%m-%d')
+
+                    # Iterate through the options to find and click the one corresponding to yesterday's date
+                    for option in options:
+                        if option.get_attribute("value") == yesterday_str:
+                            option.click()
+                            time.sleep(4)  # Wait for the page to reload with new date
+                            break
+
+                except Exception as e:
+                    print(f"Exception occurred while changing the date: {e}")
+            time.sleep(10)
+            try:
+                competition_tables = WebDriverWait(self.live_score_driver_liveScores, 15).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#allCont > div[id^='s0compTable']"))
+
+                )
+            except Exception as e:
+                print(f"Exception occurred while waiting for competition tables: {e}")
+                continue
+
+            outer_break = False  # Flag to indicate if we need to break out of the outer loop
+            if con > 5:
+                print(f"competition_tables length: {len(competition_tables)}")
+            numberOfError = 0
+            for table in competition_tables:
+                if numberOfError > 5:
+                    time.sleep(7)
+                    break
+                try:
+                    game_containers = WebDriverWait(table, 15).until(
+                        EC.presence_of_all_elements_located((By.CSS_SELECTOR, "div[id^='s0gametr']"))
+                    )
+                except Exception as e:
+                    numberOfError += 1
+                    print(f"Exception occurred while waiting for game containers: {e}")
+                    continue
+
+                if con % 4 == 0 or con % 5 == 0:
+                    print(f"game length: {len(game_containers)}")
+                for container in game_containers:
+                    try:
+                        home_team = WebDriverWait(container, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, ".teamName.row1"))
+                        ).text
+                        away_team = WebDriverWait(container, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, ".teamName.row2"))
+                        ).text
+
+                        scores_table = container.find_element(By.CSS_SELECTOR, ".allScores table")
+                        rows = scores_table.find_elements(By.TAG_NAME, "tr")
+
+                        home_scores = []
+                        away_scores = []
+                        g = 1
+
+                        total_match_played = 0
+                        for row in rows:
+                            cells = row.find_elements(By.TAG_NAME, "td")
+                            if g % 2 != 0:
+                                for i in range(len(cells)):
+                                    home_score_text = cells[i].text.strip()
+                                    if home_score_text.isdigit():
+                                        home_scores.append(int(home_score_text))
+                                        total_match_played += 1
+                            else:
+                                for i in range(len(cells)):
+                                    away_score_text = cells[i].text.strip()
+                                    if away_score_text.isdigit():
+                                        away_scores.append(int(away_score_text))
+                            g += 1
+
+                        home_score_total = sum(home_scores)
+                        away_score_total = sum(away_scores)
+                        total_score = home_score_total + away_score_total
+
+                        total_score = total_match_played  # because we are using total match and not the
+                        # total score of the game
+
+                        start_time_element = WebDriverWait(container, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, ".time"))
+                        )
+
+                        # Assuming start_time is in 24-hour format, e.g., "15:30"
+                        start_time_str = start_time_element.text.strip()
+
+                        # UK time zone
+                        uk_tz = pytz.timezone('Europe/London')
+                        # Nigeria time zone
+                        nigeria_tz = pytz.timezone('Africa/Lagos')
+
+                        # Parse the time string
+                        start_time_uk = datetime.strptime(start_time_str, "%H:%M")
+
+                        # Localize the start time to the UK time zone
+                        start_time_uk = uk_tz.localize(start_time_uk)
+
+                        # Convert the time to Nigeria time
+                        start_time_nigeria = start_time_uk.astimezone(nigeria_tz)
+
+                        # Format the time in Nigeria time zone
+                        start_time_nigeria_str = start_time_nigeria.strftime("%H:%M")
+                        start_time = start_time_nigeria_str
+
+                        match_status_element = WebDriverWait(container, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, "[id^='sp0min']"))
+                        )
+                        match_status = match_status_element.text.strip()
+
+                    except Exception as e:
+                        print(f"Container Exception occurred: {e}")
+                        continue
+
+                    try:
+                        home_team_list = filter_short_words(home_team.split())
+                        away_team_list = filter_short_words(away_team.split())
+                        given_home_team_list = filter_short_words(given_home_team.split())
+                        given_away_team_list = filter_short_words(given_away_team.split())
+
+                        if con % 4 == 0 or con % 5 == 0:
+                            print(
+                                f"{home_team_list} compare {given_home_team_list}   and  {away_team_list} compare {given_away_team_list} : {start_time} = ={self.find_match_time} == {self.match_starting_time}")
+
+                        timeIs = False
+
+                        # if start_time == self.find_match_time or start_time == self.match_starting_time or tried >= 2:
+                        #     timeIs = True
+                        timeIs = True  # fake assumption because the score website time is usually wrong
+
+                        if ((set(home_team_list).intersection(given_home_team_list) and
+                             set(away_team_list).intersection(given_away_team_list)) or
+                            (set(home_team_list).intersection(given_home_team_list) and
+                             set(home_team_list).intersection(
+                                 given_away_team_list))) and timeIs:
+
+                            print(f"Found: {home_team_list} vs {away_team_list}")
+                            if (match_status == "Ret" or match_status == "-") and find:
+                                print("Match has been postponed")
+                                return "Not Found"
+                            elif find:
+                                return "Found"
+
+                            print(f"Match Status: {match_status}")
+                            if (match_status in ["Res"]) or (total_score > 2):
+                                if match_status not in ["Res"]:
+                                    print("Match is still on but on the 3rd set now")
+                                try:
+                                    print(f"result completed: total game is {total_score}")
+                                    return "U" if total_score == 2 else "O"
+                                except:
+                                    print("Match has no result after betting but wait for bet9ja result")
+                            elif match_status == "Ret":
+                                print("Match was Postponed/Suspended after betting")
+                                return "Ret"
+                            outer_break = True
+                    except Exception as e:
+                        print(f"Exception occurred in here: {e}")
+                        continue
+
+                if outer_break:
+                    break  # Break out of the outer loop
+            if find:
+                print("Not Found")
+                return "Not Found"
+            print("150 seconds")
+            time.sleep(150)
+
     def get_odd_or_even_score(self, given_home_team, given_away_team, find):
         print(f"Looking for: {given_home_team} vs {given_away_team}")
         given_home_team = given_home_team.replace(",", "")
@@ -543,6 +733,21 @@ class Bet9jaBot:
                     self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
                     return "Lost"
                 else:
+                    result = self.get_odd_or_even_score_liveScores(self.listOfAllMatchName[-1][0],
+                                                                   self.listOfAllMatchName[-1][1],
+                                                                   False)
+                    if result == self.betting_odd_even:
+                        self.ListOfAllWinMatch.append(self.listOfAllMatch[-1])
+                        print(f"Won the match from live scores: {self.listOfAllMatchName[-1]}")
+                        return self.betting_odd_even
+                    elif (result == "O" and self.betting_odd_even == "U") or (result == "U" and self.betting_odd_even == "O"):
+                        print(f"Lost the match from live scores: {self.listOfAllMatchName[-1]}")
+                        self.listOfAllLostMatch.append(self.listOfAllMatch[-1])
+                        return "Lost"
+                    elif result == "Ret":
+                        print(f"Cancelled match from live scores: {self.listOfAllMatchName[-1]}")
+                        self.match_PST = True
+                        return "No result"
                     print(f"Return repeat for :{self.listOfAllMatchName[-1]}")
                     return "Repeat"
 
@@ -719,11 +924,10 @@ class Bet9jaBot:
                     print(f"Exception {e}")
                     print("Error while finding match, sleeping for 3 seconds")
                     time.sleep(3)
-            if len(my_match) == 1:
-
+            if len(my_match) < sample_size:
                 print(
-                    f"Going to sleep for {int((200 * 22) / (number_of_threads_remaining - restart))} seconds so that all bets is not on fewer games")
-                time.sleep(int((200 * 22) / (number_of_threads_remaining - restart)))
+                    f"Going to sleep for {int(((600/len(my_match)) * 22) / (number_of_threads_remaining - restart))} seconds so that all bets is not on fewer games")
+                time.sleep(int(((600/len(my_match)) * 22) / (number_of_threads_remaining - restart)))
 
             if len(my_match) < 1:  # < sample_size - 1:
                 listOfNotFoundMatchIndex = []  # Just because some match can get pst and remove which ruin the index
