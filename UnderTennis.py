@@ -23,7 +23,7 @@ import re
 username = "Ezekielgadzama"
 password = "Ezekiel23"
 number_of_trials = 7  # advice to use a minimum of 5
-potential_monthly_Profit = 11.726  # 1581 4 (for 9 threads) 1581
+potential_monthly_Profit = 12  # 1581 4 (for 9 threads) 1581
 amount_to_use = 15000  # -1,761
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
@@ -1380,8 +1380,8 @@ class Bet9jaBot:
 
                     try:
                         print(
-                            f"Going to sleep for {int((200 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
-                        time.sleep(int((200 * 22) / (number_of_threads_remaining - restart)))
+                            f"Going to sleep for {int((170 * 22) / threading.active_count())} seconds so that all bets is not on fewer games")
+                        time.sleep(int((170 * 22) / (number_of_threads_remaining - restart)))
                         self.pick_a_match()
                     except:
                         print("This thread didn't pick a match successfully")
