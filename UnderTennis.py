@@ -20,11 +20,11 @@ import os
 import re
 
 # Initialize lists to store data
-username = "Ezekielgadzama"
-password = "Ezekiel23"
+username = "Mobolaji3002"
+password = "Avis10alk"
 number_of_trials = 7  # advice to use a minimum of 5
-potential_monthly_Profit = 12  # 1581 4 (for 9 threads) 1581
-amount_to_use = 15000  # -1,761
+potential_monthly_Profit = 13  # 1581 4 (for 9 threads) 1581
+amount_to_use = 23008  # -1,761
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -38,6 +38,7 @@ current_amount = amount_to_use
 listOfNotFoundMatchIndex = []
 number_of_threads_remaining = 0
 restart = 0
+
 # fullname = input("Enter Full name: ")
 # username = input("Enter bet9ja username: ")
 # password = input("Enter bet9ja password: ")
@@ -182,12 +183,14 @@ email_thread = start_email_thread(True)  # to be able to send profit email
 
 
 # Initialize the webdriver instances outside of Bet9jaBot class
-driver = webdriver.Chrome()
-live_score_driver = webdriver.Chrome()
-live_score_driver_liveScores = webdriver.Chrome()
+# driver = webdriver.Chrome()
+# live_score_driver = webdriver.Chrome()
+# live_score_driver_liveScores = webdriver.Chrome()
 #
-# driver = webdriver.Edge()
-# live_score_driver = webdriver.Edge()
+#
+driver = webdriver.Edge()
+live_score_driver = webdriver.Edge()
+live_score_driver_liveScores = webdriver.Edge()
 #
 # driver = webdriver.Firefox()
 # live_score_driver = webdriver.Firefox()
@@ -238,6 +241,7 @@ class Bet9jaBot:
         self.betTimes = 0
         self.num_of_wins_before_terminate = 1
         self.betID = None
+        self.save_under = 2
 
     def click_cancel_buttons(self, number_to_keep):
         value = False
@@ -370,7 +374,7 @@ class Bet9jaBot:
         sets_xpath = "//ul[contains(@class, 'sports-view__bar-nav')]//li[contains(@class, 'sports-view__bar-navitem') and text()='Sets']"
 
         # Wait for the element to be clickable
-        sets_element = WebDriverWait(driver, 10).until(
+        sets_element = WebDriverWait(self.driver, 10).until(
             EC.element_to_be_clickable((By.XPATH, sets_xpath))
         )
 
@@ -411,7 +415,7 @@ class Bet9jaBot:
             )
 
             # Find the accordion element
-            WebDriverWait(driver, 10).until(
+            accordion_element = WebDriverWait(self.driver, 10).until(
                 EC.presence_of_element_located((By.XPATH, accordion_xpath))
             )
 
@@ -421,7 +425,7 @@ class Bet9jaBot:
             )
 
             # Locate the "Under" odds element
-            under_odds_element = WebDriverWait(driver, 10).until(
+            under_odds_element = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, under_odds_xpath))
             )
 
@@ -431,11 +435,25 @@ class Bet9jaBot:
             )
 
             # Locate the "Over" odds element
-            over_odds_element = WebDriverWait(driver, 10).until(
+            over_odds_element = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, over_odds_xpath))
             )
 
             # Click on the odd odds element
+            previous_value = self.betting_odd_even
+            # Optionally, click the element again to unselect it
+            try:
+                accordion_element.find_element(By.XPATH, './/div[contains(text(), "3.5")]')
+                print("It is a 3 set match")
+                print(float(under_odds_element.text))
+                self.save_under = 3
+                if float(under_odds_element.text) > float(over_odds_element.text):
+                    self.betting_odd_even = "O"
+                    print("self.betting_odd_even set to 'O'")
+            except:
+                print("It is a 2 set match")
+                self.save_under = 2
+
             if self.betting_odd_even == "U":
                 under_odds_element.click()
                 # Extract the value of the odd odds
@@ -447,10 +465,11 @@ class Bet9jaBot:
                 # Click on the even odds element
                 over_odds_element.click()
                 # Extract the value of the even odds
-                over_odds_value = float(over_odds_element.click().text)
+                over_odds_value = float(over_odds_element.text)
                 # Print the value of the even odds
                 print("Set Over Odds Value:", over_odds_value)
                 self.listOfAllOdds.append(over_odds_value)
+            self.betting_odd_even = previous_value
 
     def get_odd_or_even_score_liveScores(self, given_home_team, given_away_team, find):
         global live_score_driver_liveScores
@@ -587,10 +606,10 @@ class Bet9jaBot:
                         continue
 
                     try:
-                        home_team_list = filter_short_words(home_team.split())
-                        away_team_list = filter_short_words(away_team.split())
-                        given_home_team_list = filter_short_words(given_home_team.split())
-                        given_away_team_list = filter_short_words(given_away_team.split())
+                        home_team_list = home_team
+                        away_team_list = away_team
+                        given_home_team_list = given_home_team
+                        given_away_team_list = given_away_team
 
                         if con % 4 == 0 or con % 5 == 0:
                             print(
@@ -616,12 +635,12 @@ class Bet9jaBot:
                                 return "Found"
 
                             print(f"Match Status: {match_status}")
-                            if (match_status in ["Res"]) or (total_score > 2):
+                            if (match_status in ["Res"]) or (total_score > self.save_under):
                                 if match_status not in ["Res"]:
-                                    print("Match is still on but on the 3rd set now")
+                                    print(f"Match is still on but after the {self.save_under} now")
                                 try:
                                     print(f"result completed: total game is {total_score}")
-                                    return "U" if total_score == 2 else "O"
+                                    return "U" if total_score <= self.save_under else "O"
                                 except:
                                     print("Match has no result after betting but wait for bet9ja result")
                             elif match_status == "Ret":
@@ -1285,7 +1304,7 @@ class Bet9jaBot:
             return False
 
     def checking_browsers_are_open(self):
-        global driver, live_score_driver
+        global driver, live_score_driver, live_score_driver_liveScores
         while True:
             print("checking bet9ja browser is still open")
             try:
@@ -1296,7 +1315,7 @@ class Bet9jaBot:
             except:
                 # If accessing the driver fails, it means the browser is closed
                 print("Browser closed. Reopening...")
-                driver = webdriver.Chrome()
+                driver = webdriver.Edge()
                 # Set the size of the windows
                 driver.set_window_size(800, 800)
                 driver.set_window_position(740, 0)
@@ -1315,13 +1334,28 @@ class Bet9jaBot:
             except:
                 # If accessing the driver fails, it means the browser is closed
                 print("Browser closed. Reopening...")
-                live_score_driver = webdriver.Chrome()
+                live_score_driver = webdriver.Edge()
                 # Set the size of the windows
                 live_score_driver.set_window_size(650, 800)
                 live_score_driver.set_window_position(0, 0)
                 live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
+
+            try:
+                # Attempt to access the driver to check if it is still open
+                current_url = live_score_driver_liveScores.current_url
+                print(f"Browser is open. Current URL: {current_url}")
+                break
+            except:
+                # If accessing the driver fails, it means the browser is closed
+                print("Browser closed. Reopening...")
+                live_score_driver_liveScores = webdriver.Edge()
+                # Set the size of the windows
+                live_score_driver_liveScores.set_window_size(650, 800)
+                live_score_driver_liveScores.set_window_position(0, 0)
+                live_score_driver_liveScores.get("http://scores.betrescue.com/tennis.php")
         self.driver = driver
         self.live_score_driver = live_score_driver
+        self.live_score_driver_liveScores = live_score_driver_liveScores
 
     def bet_num_games_with_trials(self):
         global sum_of_all_profit_made, retryFirstList, retrySecondList, retryThirdList, backUp, amount_to_use, restart, number_of_threads_remaining
@@ -1562,6 +1596,7 @@ class Bet9jaBot:
 
         self.driver.get("https://sports.bet9ja.com/sport/tennis/5")
         self.live_score_driver.get("https://sports.bet9ja.com/sport/tennis/5")
+        self.live_score_driver_liveScores.get("http://scores.betrescue.com/tennis.php")
         if not self.login():
             return
         self.handle_upcoming_tab()
