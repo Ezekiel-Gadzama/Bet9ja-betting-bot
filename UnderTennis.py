@@ -24,7 +24,7 @@ username = "Mobolaji3002"
 password = "Avis10alk"
 number_of_trials = 7  # advice to use a minimum of 5
 potential_monthly_Profit = 13  # 1581 4 (for 9 threads) 1581
-amount_to_use = 23008  # -1,761
+amount_to_use = 50000  # -1,761
 # can not be less than [5: 7085], [6: 16020], [7: 35567], [8: 78210], [9: 171121], [10: 373439], [11:
 betType = "Set"  # 'Goal', 'Corner', 'Win team'
 starting_stake = 10  # can not be less than 100
@@ -183,13 +183,13 @@ email_thread = start_email_thread(True)  # to be able to send profit email
 
 
 # Initialize the webdriver instances outside of Bet9jaBot class
-# driver = webdriver.Chrome()
-# live_score_driver = webdriver.Chrome()
+driver = webdriver.Chrome()
+live_score_driver = webdriver.Chrome()
 # live_score_driver_liveScores = webdriver.Chrome()
 #
 #
-driver = webdriver.Edge()
-live_score_driver = webdriver.Edge()
+# driver = webdriver.Edge()
+# live_score_driver = webdriver.Edge()
 # live_score_driver_liveScores = webdriver.Edge()
 #
 # driver = webdriver.Firefox()
@@ -242,6 +242,9 @@ class Bet9jaBot:
         self.num_of_wins_before_terminate = 1
         self.betID = None
         self.save_under = 2
+        self.previous_value = self.betting_odd_even
+        self.current_trial = 0
+        self.additional_count = 0
 
     def click_cancel_buttons(self, number_to_keep):
         value = False
@@ -440,7 +443,7 @@ class Bet9jaBot:
             )
 
             # Click on the odd odds element
-            previous_value = self.betting_odd_even
+            self.previous_value = self.betting_odd_even
             # Optionally, click the element again to unselect it
             try:
                 accordion_element.find_element(By.XPATH, './/div[contains(text(), "3.5")]')
@@ -469,7 +472,6 @@ class Bet9jaBot:
                 # Print the value of the even odds
                 print("Set Over Odds Value:", over_odds_value)
                 self.listOfAllOdds.append(over_odds_value)
-            self.betting_odd_even = previous_value
 
     def perform_cashout(self):
         try:
@@ -838,9 +840,14 @@ class Bet9jaBot:
                         print(f"result was not found and a random result was chosen as {result}")
                         break
                     time.sleep(3)
-            if counting >= 35:
-                self.perform_cashout()
 
+            if counting >= 35 + self.additional_count and self.current_trial >= self.number_of_trials - 2:
+                print(f"It has to be patient because the trial is {self.current_trial}  >= {self.number_of_trials - 2}")
+                self.additional_count += 36
+                print(f"additional_count is now: {self.additional_count}")
+            if counting >= 35 + self.additional_count:
+                print("Trying to perform cashout")
+                self.perform_cashout()
 
         with login_lock:
             self.login()
@@ -861,7 +868,7 @@ class Bet9jaBot:
             counting += 1
             if result == "next stage":
                 counting -= 1
-            if counting >= 36:  # retry 6 time which is 6 hours
+            if counting >= 36 + self.additional_count:  # retry 6 time which is 6 hours
                 print(f"Postponed match: {self.listOfAllMatchName[-1]}")
                 self.match_PST = True
                 return False
@@ -1361,7 +1368,7 @@ class Bet9jaBot:
             except:
                 # If accessing the driver fails, it means the browser is closed
                 print("Browser closed. Reopening...")
-                driver = webdriver.Edge()
+                driver = webdriver.Chrome()
                 # Set the size of the windows
                 driver.set_window_size(800, 800)
                 driver.set_window_position(740, 0)
@@ -1380,7 +1387,7 @@ class Bet9jaBot:
             except:
                 # If accessing the driver fails, it means the browser is closed
                 print("Browser closed. Reopening...")
-                live_score_driver = webdriver.Edge()
+                live_score_driver = webdriver.Chrome()
                 # Set the size of the windows
                 live_score_driver.set_window_size(650, 800)
                 live_score_driver.set_window_position(0, 0)
@@ -1394,7 +1401,7 @@ class Bet9jaBot:
             # except:
             #     # If accessing the driver fails, it means the browser is closed
             #     print("Browser closed. Reopening...")
-            #     live_score_driver_liveScores = webdriver.Edge()
+            #     live_score_driver_liveScores = webdriver.Chrome()
             #     # Set the size of the windows
             #     live_score_driver_liveScores.set_window_size(650, 800)
             #     live_score_driver_liveScores.set_window_position(0, 0)
@@ -1451,6 +1458,9 @@ class Bet9jaBot:
             trial = counting_fail_trials
 
             while trial < self.number_of_trials - 1:
+                self.betting_odd_even = self.previous_value
+                self.current_trial = trial
+                self.additional_count = 0
                 with pick_a_match_lock:
                     time.sleep(50)  # very important sleep to make the previous thread finish betting. don't change
                     self.checking_browsers_are_open()
