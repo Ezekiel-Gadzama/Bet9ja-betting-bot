@@ -5,16 +5,28 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import numpy as np
+from datetime import datetime
+
+# Get the current time
+current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Print the current time
+print("Current time:", current_time)
 
 webdriver = webdriver.Edge()
 lock = threading.Lock()
-current_balance = 0
+current_balance = 15000
+count_finished = 0
+original_count = 0
+original_amount_deposited = 0
+all_rest = False
 
 
 class BettingBot:
     def __init__(self, username, password, amount_to_use, average_odd, number_of_trials, threads):
-        global current_balance
+        global current_balance, original_amount_deposited
         current_balance = amount_to_use
+        original_amount_deposited = current_balance
         self.username = username
         self.password = password
         self.amount_to_use = amount_to_use
@@ -68,7 +80,8 @@ class BettingBot:
         button.click()
 
     def handle_login(self):
-        self.driver.get("https://sports.bet9ja.com/event/464003822")
+        self.driver.get("https://sports.bet9ja.com/event/465448155")
+        # self.driver.get("https://vpnmasterpro.com/check-ip/")
 
         login_button = WebDriverWait(self.driver, 4).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, '.btn-primary-m.btn-login'))
@@ -131,6 +144,7 @@ class BettingBot:
             print(f"Error clicking 'OK Continue' button: ")
 
     def place_bet(self, stake_list, index):
+        print(f"Stake: {stake_list[index]} with index: {index}")
         time.sleep(2)
         try:
             # Locate the stake input field container
@@ -174,23 +188,26 @@ class BettingBot:
         self.switch_to_simulate_mode()
 
     def pick_game(self):
-        time.sleep(4)
-        # XPath to find the accordion item containing the desired text
-        accordion_xpath = ('//div[contains(@class, "accordion-item--open") and .//p[contains(text(), "Odd or even '
-                           'total number of goals after Full time (FT)")]]')
+        time.sleep(7)
+        try:
+            # XPath to find the accordion item containing the desired text
+            accordion_xpath = ('//div[contains(@class, "accordion-item--open") and .//p[contains(text(), "Odd or even '
+                               'total number of goals after Full time (FT)")]]')
 
-        # Find the element with the specified XPath
-        accordion_element = self.driver.find_element(By.XPATH, accordion_xpath)
-        # Locate the odd odds element within the accordion item using XPath
-        odd_odds_element = accordion_element.find_element(By.XPATH,
-                                                          './/div[@class="market-item"][div/span[text('
-                                                          ')="Odd"]]//div[@class="market-odd"]')
+            # Find the element with the specified XPath
+            accordion_element = self.driver.find_element(By.XPATH, accordion_xpath)
+            # Locate the odd odds element within the accordion item using XPath
+            odd_odds_element = accordion_element.find_element(By.XPATH,
+                                                              './/div[@class="market-item"][div/span[text('
+                                                              ')="Odd"]]//div[@class="market-odd"]')
 
-        # Locate the even odds element within the accordion item using XPath
-        even_odds_element = accordion_element.find_element(By.XPATH,
-                                                           './/div[@class="market-item"][div/span[text('
-                                                           ')="Even"]]//div[@class="market-odd"]')
-        even_odds_element.click()
+            # Locate the even odds element within the accordion item using XPath
+            even_odds_element = accordion_element.find_element(By.XPATH,
+                                                               './/div[@class="market-item"][div/span[text('
+                                                               ')="Even"]]//div[@class="market-odd"]')
+            # odd_odds_element.click()
+        except:
+            print("I input myself")
 
     def handle_bet_result(self, stake_list, index):
         global current_balance
@@ -220,6 +237,7 @@ class BettingBot:
         self.open_speed_menu()
 
     def go(self):
+        global count_finished, all_rest, current_balance
         while True:
             try:
                 stake_list = self.stake_distribution_starting_stake()
@@ -227,22 +245,39 @@ class BettingBot:
                     continue  # Skip if no stakes were returned
                 else:
                     print(stake_list)
+
                 with lock:
+                    time.sleep(2)  # very important
+                    if all_rest:
+                        print(f"ready to re-bet :This thread returned")
+                        self.index = 0
+                        return
                     self.place_bet(stake_list, self.index)
 
+                    num = 3
                     try:
                         if self.handle_bet_result(stake_list, self.index):
+                            percentage_loss = 1  # 3.16
+                            if self.index >= num and (abs(current_balance - original_amount_deposited) <= ((percentage_loss / 100) * original_amount_deposited)):
+                                print(f"First statement: {self.index >= num}  and second statement: {self.index >= num + 1}")
+                                print(
+                                    f"Winning thread Index is >= {num} and current balance {current_balance} > {original_amount_deposited} and profit is {current_balance - original_amount_deposited}")
+                                if current_balance < original_amount_deposited:
+                                    print(f"This is a maximum loss of {current_balance - original_amount_deposited}")
+                                all_rest = True
                             self.index = 0
                         else:
+
                             self.index += 1
+
                             if self.index >= self.number_of_trials - 1:
                                 self.index -= 1
                                 sum_of_index = sum(stake_list[:self.index])
                                 self.amount_to_use -= sum_of_index
                                 self.index = 0
-                            if self.amount_to_use < 15000:
-                                self.number_of_trials = 5
-                                print("Amount is less than 15000")
+                            # if self.amount_to_use < 15000:
+                            #     self.number_of_trials = 5
+                            #     print("Amount is less than 15000")
 
                         done_button = WebDriverWait(self.driver, 10).until(
                             EC.element_to_be_clickable((By.CSS_SELECTOR, "button[data-testid='game-done']"))
@@ -253,10 +288,41 @@ class BettingBot:
                     except Exception as e:
                         print(f"Interesting problem 1")
                         self.index -= 1
-                        global current_balance
                         current_balance += stake_list[self.index]
                         print(f"did current balance change:  {current_balance}")
                         self.click_ok_continue()
+                        print("continue")
+                        continue
+                if self.index >= num + 2:
+                    if current_balance < original_amount_deposited:
+                        print(f"Now we have a Terrible loss of {current_balance - original_amount_deposited}")
+                    all_rest = True
+                    self.index = 0
+
+                if count_finished <= 3 <= self.index:
+                    print("This is a failed hope, restart over again")
+                    print(
+                        f"Failed thread Index is >= {num} and current balance {current_balance} > {original_amount_deposited} and profit is {current_balance - original_amount_deposited}")
+                    if current_balance < original_amount_deposited:
+                        print(f"This is a Terrible loss of {current_balance - original_amount_deposited}")
+                    all_rest = True
+                    self.index = 0
+
+                if current_balance > original_amount_deposited:
+                    print(
+                        f"Account balance is greater than original amount {current_balance} > {original_amount_deposited} and profit is {current_balance - original_amount_deposited}")
+                    all_rest = True
+
+                if self.index == 0:
+                    count_finished -= 1
+                    print("Thread is going to sleep")
+                    print(f"Number of thread remaining: {count_finished}")
+                    while count_finished > 0 and (not all_rest):
+                        time.sleep(1)
+                    print("ready to re-bet")
+                    time.sleep(3)
+                    print("finishing 3 seconds")
+                    count_finished = original_count
 
             except Exception as e:
                 with lock:
@@ -265,11 +331,12 @@ class BettingBot:
 
 
 def run_multiple_bots(num_bots):
-    bot = BettingBot("Mobolaji3002", "Avis10alk", 24235, 1.78, 7, num_bots)
-    bot.run()
+    global count_finished, original_count, original_amount_deposited, current_balance, all_rest
+    count_finished = num_bots
+    original_count = count_finished
     threads = []
     for i in range(num_bots):
-        bot = BettingBot("Mobolaji3002", "Avis10alk", 24235, 1.78, 7, num_bots)
+        bot = BettingBot("ezekielgadzama", "Ezekiel23", current_balance, 1.88, 7, num_bots)
         thread = threading.Thread(target=bot.go)
         threads.append(thread)
         thread.start()
@@ -277,6 +344,14 @@ def run_multiple_bots(num_bots):
     for thread in threads:
         thread.join()
 
+    original_amount_deposited = current_balance
+    all_rest = False
+    print("Running again")
+    run_multiple_bots(num_bots)
+
 
 if __name__ == "__main__":
-    run_multiple_bots(3)  # Change this number to create more or fewer bots
+    num_bots = 10
+    boter = BettingBot("ezekielgadzama", "Ezekiel23", current_balance, 1.88, 7, num_bots)
+    boter.run()
+    run_multiple_bots(num_bots)  # Change this number to create more or fewer bots
