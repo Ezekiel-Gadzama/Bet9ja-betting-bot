@@ -1,9 +1,10 @@
 from collections import Counter
+import random
 
 count_percentage = 0.3
 
 
-def count_every_70th(n):
+def count_every_th(n):
     all_results = []  # List of lists to store results for each i
 
     for i in range(1, 1000000):
@@ -29,22 +30,38 @@ def count_every_70th(n):
     return all_results
 
 
-def get_most_common_numbers(all_results):
+def get_most_common_numbers(all_results_now):
     # Flatten the list of lists into a single list
-    flattened_list = [num for sublist in all_results for num in sublist]
+    flattened_list = [num for sublist in all_results_now for num in sublist]
 
     # Count the frequency of each number
     number_counts = Counter(flattened_list)
 
     # Sort the numbers based on frequency in descending order
-    sorted_numbers = sorted(number_counts.items(), key=lambda x: x[1], reverse=True)
 
-    return sorted_numbers
+    return sorted(number_counts.items(), key=lambda x: x[1], reverse=True)
+
+
+# Split the list into t = 5 equal parts
+def printResult(final_list_show):
+    t = 4
+    list_size = len(final_list_show) // t  # Determine the size of each sublist
+    split_lists = [final_list_show[i * list_size:(i + 1) * list_size] for i in range(t)]
+
+    # If there are remaining elements, add them to the last sublist
+    if len(final_list_show) % t != 0:
+        split_lists[-1].extend(final_list_show[t * list_size:])
+
+    # Print each of the 4 sublists
+    for i, sublist in enumerate(split_lists, start=1):
+        print(f"\nSublist {i}:")
+        print(sublist)
+    print("\nThe end of the list\n\n")
 
 
 # Example usage
 n = 94  # Replace with any number
-all_results = count_every_70th(n)
+all_results = count_every_th(n)
 sorted_numbers = get_most_common_numbers(all_results)
 print(f"length of sorted_numbers: {len(sorted_numbers)}")
 # Print the numbers sorted by highest intersection
@@ -57,21 +74,19 @@ for number, count in sorted_numbers[:int(count_percentage * n)]:
     final_list.append(number)
 
 # Now final_list will contain the first 30 numbers from the sorted list
-print(f"\nFinal List of first {int(count_percentage * n)} numbers:")
-
+print(f"\nFinal List of first {int(count_percentage * n)} numbers:\n{sorted(final_list)}\n\n\n\n")
+printResult(final_list)
 final_list = sorted(final_list)
-print(final_list)
+printResult(final_list)
 
-# Split the list into t = 5 equal parts
-t = 4
-list_size = len(final_list) // t  # Determine the size of each sublist
-split_lists = [final_list[i * list_size:(i + 1) * list_size] for i in range(t)]
+# Randomly select 28 unique numbers between 1 and 94
+random_numbers = random.sample(range(1, n + 1),  int(count_percentage * n))
 
-# If there are remaining elements, add them to the last sublist
-if len(final_list) % t != 0:
-    split_lists[-1].extend(final_list[t * list_size:])
+# Print the randomly selected numbers
+print("Randomly selected numbers:")
+print(sorted(random_numbers))
 
-# Print each of the 4 sublists
-for i, sublist in enumerate(split_lists, start=1):
-    print(f"\nSublist {i}:")
-    print(sublist)
+# Find and print the intersection of final_list and random_numbers
+intersection = sorted(set(final_list).intersection(random_numbers))
+print(f"\nNumbers that intersect between final_list and random_numbers has length: {len(intersection)}")
+print(intersection)
