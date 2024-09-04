@@ -58,4 +58,20 @@ for number, count in sorted_numbers[:int(count_percentage * n)]:
 
 # Now final_list will contain the first 30 numbers from the sorted list
 print(f"\nFinal List of first {int(count_percentage * n)} numbers:")
-print(sorted(final_list))
+
+final_list = sorted(final_list)
+print(final_list)
+
+# Split the list into t = 5 equal parts
+t = 4
+list_size = len(final_list) // t  # Determine the size of each sublist
+split_lists = [final_list[i * list_size:(i + 1) * list_size] for i in range(t)]
+
+# If there are remaining elements, add them to the last sublist
+if len(final_list) % t != 0:
+    split_lists[-1].extend(final_list[t * list_size:])
+
+# Print each of the 4 sublists
+for i, sublist in enumerate(split_lists, start=1):
+    print(f"\nSublist {i}:")
+    print(sublist)
