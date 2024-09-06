@@ -40,6 +40,30 @@ def calculate_profit_ratio(n, win_rate, odd_per_match, stake_per_bet, comb):
 
     return profit_ratio, total_combinations, winning_combinations, losing_combinations, profit
 
+def calculate_arbitrage(odd1, odd2, total_stake):
+    # Check if arbitrage exists
+    if (1/odd1 + 1/odd2) >= 1:
+        return "No arbitrage opportunity."
+
+    # Calculate stakes for both outcomes
+    stake1 = total_stake * (1/odd1) / (1/odd1 + 1/odd2)
+    stake2 = total_stake * (1/odd2) / (1/odd1 + 1/odd2)
+
+    # Calculate returns for both outcomes
+    return1 = stake1 * odd1
+    return2 = stake2 * odd2
+
+    # Calculate profit
+    profit = return1 - total_stake  # Profit will be the same for return2
+
+    return {
+        "Stake on outcome 1": stake1,
+        "Stake on outcome 2": stake2,
+        "Total stake": total_stake,
+        "Return (either outcome)": return1,
+        "Profit": profit
+    }
+
 
 # Function to find the best n for maximizing profit ratio
 def find_best_n(max_n, win_rate, odd_per_match, stake_per_bet):
@@ -57,6 +81,53 @@ def find_best_n(max_n, win_rate, odd_per_match, stake_per_bet):
                                                                                                                             win_rate,
                                                                                                                             odd_per_match,
                                                                                                                             stake_per_bet,comb)
+                
+
+
+
+
+
+
+
+                
+                i = 1
+                while n - comb + i <= n:
+                    new_comb = n - comb + i
+                    i += 1
+                    if(new_comb > n):
+                        continue
+                    new_win_rate = 0.7
+                    new_odd_per_match = 1.43
+                    new_profit_ratio, new_total_combinations, new_winning_combinations, new_losing_combinations, new_profit = calculate_profit_ratio(n,
+                                                                                                                                                new_win_rate,
+                                                                                                                                                new_odd_per_match,
+                                                                                                                                                stake_per_bet, new_comb)
+                    odd1 = profit_ratio + 1  # First odd
+
+                    odd2 = new_profit_ratio + 1   # Second odd
+
+                    new_total_stake = 200  # Total amount you want to stake
+                    if odd1 > 1 and odd2 > 1:
+                        print(f"odd 1: {odd1}  and odd 1: {odd2}  with {profit_ratio}  and  {new_profit_ratio}")
+                        arbitrage = calculate_arbitrage(odd1, odd2, new_total_stake)
+                        if isinstance(arbitrage, str):
+                            print(f"arbitrage: {arbitrage}")
+                        else:
+                            print(f"Stake on outcome 1: {arbitrage['Stake on outcome 1']:.2f}")
+                            print(f"Stake on outcome 2: {arbitrage['Stake on outcome 2']:.2f}")
+                            print(f"Total stake: {arbitrage['Total stake']:.2f}")
+                            print(f"Return (either outcome): {arbitrage['Return (either outcome)']:.2f}")
+                            print(f"Profit: {arbitrage['Profit']:.2f}")
+
+
+
+
+
+
+
+
+
+
 
                 if profit_ratio > best_profit_ratio:
                     best_profit_ratio = profit_ratio
@@ -66,17 +137,17 @@ def find_best_n(max_n, win_rate, odd_per_match, stake_per_bet):
                     best_winning_combinations = winning_combinations
                     best_losing_combinations = losing_combinations
                     best_comb = comb
-                    print(f"Profit : {profit}  in {n}  and comb {comb}")
+                    # print(f"Profit : {profit}  in {n}  and comb {comb}")
 
 
     return best_n, best_profit_ratio, best_profit, best_total_combinations, best_winning_combinations, best_losing_combinations, best_comb
 
 
 # Parameters
-max_n = 16  # You can adjust this to test higher values of n
+max_n = 200  # You can adjust this to test higher values of n
 win_rate = 0.4
 odd_per_match = 2.7
-stake_per_bet = 100
+stake_per_bet = 10
 # Find the best n and profit ratio
 best_n, best_profit_ratio, best_profit, best_total_combinations, best_winning_combinations, best_losing_combinations, best_comb = find_best_n(
     max_n, win_rate, odd_per_match, stake_per_bet)
